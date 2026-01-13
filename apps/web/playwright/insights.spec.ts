@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './test.setup';
 import { loginAs } from './helpers/auth';
 
 test('staff can view insights', async ({ page }) => {

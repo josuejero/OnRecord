@@ -16,6 +16,14 @@ function requireString(fd: FormData, key: string) {
   return v;
 }
 
+function getTrimmedField(formData: FormData, key: string) {
+  const value = formData.get(key);
+  if (typeof value !== 'string') {
+    return '';
+  }
+  return value.trim();
+}
+
 function assertAllowedUpload(mimeType: string, byteSize: number) {
   const MAX = 25 * 1024 * 1024;
   if (byteSize > MAX) throw new Error('File too large (max 25MB)');
@@ -71,7 +79,9 @@ export async function createScheduledSession(formData: FormData) {
 
   const supabase = supabaseServer();
 
-  const { error } = await supabase.from('sessions').insert({ room_id: roomId, status: 'scheduled' });
+  const { error } = await supabase
+    .from('sessions')
+    .insert({ room_id: roomId, status: 'scheduled' });
   if (error) throw new Error(error.message);
 
   revalidatePath(revalidate);
@@ -106,7 +116,7 @@ export async function publishRecap(formData: FormData) {
   const publicFigureName = requireString(formData, 'public_figure_name');
   const roomTitle = requireString(formData, 'room_title');
   const revalidate = requireString(formData, 'revalidate');
-  const summaryInput = typeof formData.get('summary') === 'string' ? formData.get('summary').trim() : '';
+  const summaryInput = getTrimmedField(formData, 'summary');
   const summary = summaryInput.length ? summaryInput : null;
 
   const short = sessionId.slice(0, 8);
@@ -118,7 +128,7 @@ export async function publishRecap(formData: FormData) {
     p_session_id: sessionId,
     p_slug: slug,
     p_title: title,
-    p_summary: summary
+    p_summary: summary,
   });
   if (error) throw new Error(error.message);
 
@@ -168,7 +178,7 @@ export async function uploadAsset(formData: FormData) {
 
   const upRes = await supabase.storage.from(bucket).upload(objectPath, bytes, {
     contentType: mimeType,
-    upsert: false
+    upsert: false,
   });
 
   if (upRes.error) throw new Error(`Upload failed: ${upRes.error.message}`);
@@ -188,7 +198,7 @@ export async function uploadAsset(formData: FormData) {
     byte_size: bytes.length,
     sha256,
     original_filename: originalFilename,
-    created_by: user.id
+    created_by: user.id,
   });
 
   if (ins.error) {
@@ -207,7 +217,7 @@ export async function saveTranscript(formData: FormData) {
   await requireRole(['moderator', 'staff', 'admin_service']);
 
   const supabase = supabaseServer();
-  const incomingSource = typeof formData.get('source') === 'string' ? formData.get('source').trim() : '';
+  const incomingSource = getTrimmedField(formData, 'source');
   const source = SOURCE_WHITELIST.has(incomingSource) ? incomingSource : 'manual';
   const meta = parseJsonField(formData, 'meta');
 
@@ -216,14 +226,16 @@ export async function saveTranscript(formData: FormData) {
       session_id: sessionId,
       source,
       raw_text: rawText,
-      meta
+      meta,
     },
-    { onConflict: 'session_id' }
+    { onConflict: 'session_id' },
   );
 
   if (error) throw new Error(error.message);
 
-  const { error: rpcErr } = await supabase.rpc('refresh_session_insights', { p_session_id: sessionId });
+  const { error: rpcErr } = await supabase.rpc('refresh_session_insights', {
+    p_session_id: sessionId,
+  });
   if (rpcErr) throw new Error(rpcErr.message);
 
   revalidatePath(revalidate);
@@ -237,7 +249,7 @@ export async function processTranscript(formData: FormData) {
 
   const supabase = supabaseServer();
   const { error } = await supabase.functions.invoke('process-transcript', {
-    body: { session_id: sessionId }
+    body: { session_id: sessionId },
   });
 
   if (error) throw new Error(error.message);
@@ -250,7 +262,7 @@ export async function generateRecap(formData: FormData) {
   const sessionId = requireString(formData, 'session_id');
   const revalidate = requireString(formData, 'revalidate');
 
-  const providerCandidate = typeof formData.get('provider') === 'string' ? formData.get('provider').trim() : '';
+  const providerCandidate = getTrimmedField(formData, 'provider');
   const defaultProvider = getFeatureFlags().aiRecapProvider;
   const providerInput = providerCandidate || defaultProvider;
   const providerParse = AiRecapProviderSchema.safeParse(providerInput);
@@ -260,7 +272,7 @@ export async function generateRecap(formData: FormData) {
   }
 
   const provider = providerParse.data;
-  const versionInput = typeof formData.get('prompt_version') === 'string' ? formData.get('prompt_version').trim() : '';
+  const versionInput = getTrimmedField(formData, 'prompt_version');
   const promptVersion = versionInput || 'recap-v1';
   const includeInExport = formData.get('include_in_export') === 'true';
 
@@ -287,8 +299,8 @@ export async function generateRecap(formData: FormData) {
       model_id: modelId,
       prompt_version: promptVersion,
       executed_at: new Date().toISOString(),
-      hardware: hardwareHint
-    }
+      hardware: hardwareHint,
+    },
   });
 
   await persistRecap({
@@ -300,7 +312,7 @@ export async function generateRecap(formData: FormData) {
     modelId,
     recap: recapRecord,
     includeInExport,
-    createdBy: user.id
+    createdBy: user.id,
   });
 
   revalidatePath(revalidate);
@@ -313,7 +325,10 @@ export async function setRecapExportAttachment(formData: FormData) {
   const revalidate = requireString(formData, 'revalidate');
 
   const supabase = supabaseServer();
-  const { error } = await supabase.from('transcript_ai_outputs').update({ include_in_export: attach }).eq('id', recapId);
+  const { error } = await supabase
+    .from('transcript_ai_outputs')
+    .update({ include_in_export: attach })
+    .eq('id', recapId);
   if (error) throw new Error(error.message);
 
   revalidatePath(revalidate);
@@ -343,15 +358,18 @@ async function persistRecap(args: PersistRecapArgs) {
       model_id: args.modelId,
       output: args.recap,
       include_in_export: args.includeInExport,
-      created_by: args.createdBy
+      created_by: args.createdBy,
     },
-    { onConflict: 'session_id,transcript_id,prompt_version,model_id' }
+    { onConflict: 'session_id,transcript_id,prompt_version,model_id' },
   );
 
   if (error) throw new Error(error.message);
 }
 
-async function buildRecapByProvider(provider: AiRecapProvider, transcript: string): Promise<RecapCore> {
+async function buildRecapByProvider(
+  provider: AiRecapProvider,
+  transcript: string,
+): Promise<RecapCore> {
   const sourceText = transcript.length ? transcript : 'No transcript text available yet.';
   switch (provider) {
     case 'browser':
@@ -392,8 +410,12 @@ async function buildBrowserRecap(transcript: string): Promise<RecapCore> {
       summarizationPipeline = pipeline('summarization', 'Xenova/distilbart-cnn-6-6');
     }
     const summarizer = await summarizationPipeline;
-    const truncated = transcript.length ? transcript.slice(0, 4000) : 'No transcript text available yet.';
-    const [result] = (await summarizer(truncated, { max_new_tokens: 160 })) as Array<{ summary_text?: string }>;
+    const truncated = transcript.length
+      ? transcript.slice(0, 4000)
+      : 'No transcript text available yet.';
+    const [result] = (await summarizer(truncated, { max_new_tokens: 160 })) as Array<{
+      summary_text?: string;
+    }>;
     const summary = (result?.summary_text ?? '').trim();
     if (!summary) {
       throw new Error('empty_summary');
@@ -410,7 +432,9 @@ async function buildOllamaRecap(transcript: string): Promise<RecapCore> {
     const url = process.env.OLLAMA_API_URL?.trim() || 'http://127.0.0.1:11434/api/v1/predict';
     const model = process.env.OLLAMA_MODEL?.trim() || 'llama3';
     const temperature = Number(process.env.OLLAMA_TEMPERATURE ?? 0.25);
-    const truncated = transcript.length ? transcript.slice(0, 3000) : 'No transcript text available yet.';
+    const truncated = transcript.length
+      ? transcript.slice(0, 3000)
+      : 'No transcript text available yet.';
     const prompt = `Produce a short recap (3 concise sentences) highlighting the main takeaways and two key concerns from this transcript. Mention that the recap is a draft and do not provide medical advice.\n\nTranscript:\n${truncated}`;
 
     const response = await fetch(url, {
@@ -421,8 +445,8 @@ async function buildOllamaRecap(transcript: string): Promise<RecapCore> {
         prompt,
         stream: false,
         temperature,
-        max_output_tokens: 400
-      })
+        max_output_tokens: 400,
+      }),
     });
 
     if (!response.ok) {
@@ -449,14 +473,15 @@ function buildRecapFromSummary(summary: string, transcript: string): RecapCore {
     title: index === 0 ? 'Key takeaway' : 'Conversation detail',
     detail: sentence,
     evidence_span: transcript.length ? buildEvidenceSpan(transcript, index * 20, 80) : undefined,
-    label: index === 1 && transcript.length ? buildLabelSpan(transcript) : undefined
+    label: index === 1 && transcript.length ? buildLabelSpan(transcript) : undefined,
   }));
 
   while (concerns.length < 2) {
     concerns.push({
       title: 'Draft note',
       detail: 'Review this draft for accuracy.',
-      evidence_span: transcript.length ? buildEvidenceSpan(transcript, 0, 40) : undefined
+      evidence_span: transcript.length ? buildEvidenceSpan(transcript, 0, 40) : undefined,
+      label: undefined,
     });
   }
 
@@ -469,8 +494,10 @@ function buildRecapFromSummary(summary: string, transcript: string): RecapCore {
     summary: safeSummary,
     key_concerns: concerns,
     follow_up_questions: followUpQuestions,
-    safety_notes: 'Draft recap only. Confirm the transcript before sharing and treat it as informational (not medical advice).',
-    verification_notes: 'Verify statements and concerns with the official transcript prior to publishing.'
+    safety_notes:
+      'Draft recap only. Confirm the transcript before sharing and treat it as informational (not medical advice).',
+    verification_notes:
+      'Verify statements and concerns with the official transcript prior to publishing.',
   };
 }
 
@@ -485,7 +512,10 @@ function extractFollowUpQuestions(text: string): string[] {
   if (!text) return [];
   const matches = text.match(/[^.?!]*\?/g);
   if (!matches) return [];
-  return matches.map((item) => item.trim()).filter(Boolean).slice(0, 3);
+  return matches
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 3);
 }
 
 function buildEvidenceSpan(transcript: string, start: number, length: number) {
@@ -500,7 +530,7 @@ function buildEvidenceSpan(transcript: string, start: number, length: number) {
   }
   return {
     start_offset: safeStart,
-    end_offset: endOffset
+    end_offset: endOffset,
   };
 }
 
@@ -510,7 +540,7 @@ function buildLabelSpan(transcript: string) {
   return {
     ...span,
     label_type: 'review',
-    label_value: 'needs_verification'
+    label_value: 'needs_verification',
   };
 }
 
@@ -539,7 +569,9 @@ function extractOllamaResponse(payload: unknown): string | null {
   if (Array.isArray(choices)) {
     for (const choice of choices) {
       if (!choice || typeof choice !== 'object') continue;
-      const message = (choice as Record<string, unknown>).message as Record<string, unknown> | undefined;
+      const message = (choice as Record<string, unknown>).message as
+        | Record<string, unknown>
+        | undefined;
       if (!message) continue;
       const text = extractTextFromEntry(message.content);
       if (text) return text;
@@ -617,7 +649,7 @@ export async function uploadSessionAudio(formData: FormData) {
 
   const uploadRes = await supabase.storage.from('session-audio').upload(objectPath, bytes, {
     contentType: mimeType,
-    upsert: false
+    upsert: false,
   });
 
   if (uploadRes.error) throw new Error(`Upload failed: ${uploadRes.error.message}`);
@@ -628,7 +660,7 @@ export async function uploadSessionAudio(formData: FormData) {
     mime_type: mimeType,
     duration_ms: Math.round(durationMs),
     transcript_id: sessionId,
-    created_by: user.id
+    created_by: user.id,
   });
 
   if (insert.error) {

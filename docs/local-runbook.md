@@ -57,13 +57,13 @@ pnpm --filter @onrecord/web test:e2e
 
 ### Rooms list is empty
 
-* Confirm the reporter is approved if logged in as a reporter.
-* Staff/moderator accounts must have `user_roles` rows.
-* The `rooms` and `public_figures` read policies must exist.
+- Confirm the reporter is approved if logged in as a reporter.
+- Staff/moderator accounts must have `user_roles` rows.
+- The `rooms` and `public_figures` read policies must exist.
 
 ### Start session fails with `live_session_already_exists_for_room`
 
-* End the live session via the UI or run:
+- End the live session via the UI or run:
 
 ```sql
 update public.sessions set status='ended', ends_at=now()
@@ -72,29 +72,29 @@ where room_id = 'ROOM_UUID' and status='live';
 
 ### Permission denied for table sessions
 
-* Ensure `sessions_insert_staff` exists if creating sessions via insert.
-* Alternatively, call an RPC instead of inserting directly once the policies tighten.
+- Ensure `sessions_insert_staff` exists if creating sessions via insert.
+- Alternatively, call an RPC instead of inserting directly once the policies tighten.
 
 ## 7. Verification checklist
 
-* [ ] Approved reporter sees “Press Room: Demo” and can open the room.
-* [ ] Moderator sees a scheduled session and a **Start session** button.
-* [ ] Starting the session shifts it to `live`.
-* [ ] Database enforces at most one live session per room.
-* [ ] Reporter reloads the room detail page and still sees `live`.
-* [ ] Playwright session workflow test passes.
-* [ ] `audit_events` contains `session_started` and `session_ended` entries.
+- [ ] Approved reporter sees “Press Room: Demo” and can open the room.
+- [ ] Moderator sees a scheduled session and a **Start session** button.
+- [ ] Starting the session shifts it to `live`.
+- [ ] Database enforces at most one live session per room.
+- [ ] Reporter reloads the room detail page and still sees `live`.
+- [ ] Playwright session workflow test passes.
+- [ ] `audit_events` contains `session_started` and `session_ended` entries.
 
 ## 8. Phase 6 assets retention
 
 ### Public recap assets
 
-* Retain while the associated recap is published.
-* Remove within 30 days if the recap is unpublished or deleted.
+- Retain while the associated recap is published.
+- Remove within 30 days if the recap is unpublished or deleted.
 
 ### Private session assets
 
-* Retain for 90 days after the session ends even if the recap stays published.
+- Retain for 90 days after the session ends even if the recap stays published.
 
 ### Manual removal runbook (service role)
 

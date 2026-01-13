@@ -32,10 +32,17 @@ export function useSpeechRecognition({ onFinalResult }: UseSpeechRecognitionOpti
       return null;
     }
 
-    return (window as Window & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition })
-      .SpeechRecognition ??
-      (window as Window & { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition ??
-      null;
+    return (
+      (
+        window as Window & {
+          SpeechRecognition?: typeof SpeechRecognition;
+          webkitSpeechRecognition?: typeof SpeechRecognition;
+        }
+      ).SpeechRecognition ??
+      (window as Window & { webkitSpeechRecognition?: typeof SpeechRecognition })
+        .webkitSpeechRecognition ??
+      null
+    );
   }, []);
 
   const provider = useMemo(() => recognitionCtor?.name ?? null, [recognitionCtor]);
@@ -108,8 +115,8 @@ export function useSpeechRecognition({ onFinalResult }: UseSpeechRecognitionOpti
         failureType === 'permission-denied'
           ? 'Microphone access denied. Please allow the browser to use your microphone.'
           : failureType === 'no-speech-detected'
-          ? 'No speech detected. Try again with a clearer question.'
-          : 'Recording ended unexpectedly. Try again.'
+            ? 'No speech detected. Try again with a clearer question.'
+            : 'Recording ended unexpectedly. Try again.',
     });
     setStatus('ready');
   }, []);
@@ -118,7 +125,7 @@ export function useSpeechRecognition({ onFinalResult }: UseSpeechRecognitionOpti
     if (!recognitionCtor) {
       setError({
         type: 'unsupported',
-        message: 'Web Speech API is not available in this browser.'
+        message: 'Web Speech API is not available in this browser.',
       });
       setStatus('ready');
       return;
@@ -150,7 +157,7 @@ export function useSpeechRecognition({ onFinalResult }: UseSpeechRecognitionOpti
     } catch {
       setError({
         type: 'speech-ended-unexpectedly',
-        message: 'Unable to access the microphone right now.'
+        message: 'Unable to access the microphone right now.',
       });
       setStatus('ready');
     }
@@ -167,6 +174,6 @@ export function useSpeechRecognition({ onFinalResult }: UseSpeechRecognitionOpti
     provider,
     isSupported,
     start,
-    stop
+    stop,
   };
 }

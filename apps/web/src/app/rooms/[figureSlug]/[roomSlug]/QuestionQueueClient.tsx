@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabaseBrowser } from '@/lib/supabase/browser';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -49,11 +49,14 @@ function prettyError(msg: string) {
   if (m.includes('not_authenticated')) return 'Please sign in again.';
   if (m.includes('forbidden')) return 'You do not have permission to do that.';
   if (m.includes('invalid_status')) return 'That status change is not allowed.';
-  if (m.includes('question_not_approved')) return 'Only approved questions can be made active or answered.';
+  if (m.includes('question_not_approved'))
+    return 'Only approved questions can be made active or answered.';
   if (m.includes('empty_answer')) return 'Answer can’t be empty.';
   if (m.includes('invalid_state')) return 'That action is not allowed in the current state.';
-  if (msg.includes('rate_limited_cooldown')) return 'Slow down: please wait a moment before submitting again.';
-  if (msg.includes('rate_limited_per_minute')) return 'Too many questions: try again in about a minute.';
+  if (msg.includes('rate_limited_cooldown'))
+    return 'Slow down: please wait a moment before submitting again.';
+  if (msg.includes('rate_limited_per_minute'))
+    return 'Too many questions: try again in about a minute.';
   if (m.includes('row-level security')) return 'Permission denied by database policy.';
   return msg;
 }
@@ -78,13 +81,15 @@ function statusBadge(status: QuestionStatus) {
 export function QuestionQueueClient({
   sessionId,
   activeSessionId,
-  role
+  role,
 }: {
   sessionId: string;
   activeSessionId: string | null;
   role: Role;
 }) {
   const supabase = useMemo(() => supabaseBrowser(), []);
+  const isMountedRef = useRef(true);
+  const loadingRef = useRef(false);
 
   const [questions, setQuestions] = useState<QuestionRow[]>([]);
   const [answersByQuestion, setAnswersByQuestion] = useState<Record<string, AnswerRow>>({});
@@ -106,6 +111,67 @@ export function QuestionQueueClient({
   const isModeratorLike = role === 'moderator' || role === 'staff' || role === 'admin_service';
 
   useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const loadState = useCallback(async () => {
+    if (!sessionId || loadingRef.current) return;
+    loadingRef.current = true;
+    setError(null);
+
+    try {
+      const qRes = await supabase
+        .from('questions')
+        .select('id, session_id, reporter_id, body, status, sort_rank, created_at, updated_at')
+        .eq('session_id', sessionId)
+        .order('sort_rank', { ascending: true })
+        .order('created_at', { ascending: true });
+
+      if (!isMountedRef.current) return;
+      if (qRes.error) {
+        setError(prettyError(qRes.error.message));
+        return;
+      }
+      setQuestions(stableSort((qRes.data ?? []) as QuestionRow[]));
+
+      const aRes = await supabase
+        .from('answers')
+        .select('id, question_id, session_id, body, created_by, created_at, updated_at')
+        .eq('session_id', sessionId);
+
+      if (!isMountedRef.current) return;
+      if (aRes.error) {
+        setError(prettyError(aRes.error.message));
+        return;
+      }
+      const nextAnswers: Record<string, AnswerRow> = {};
+      for (const a of (aRes.data ?? []) as AnswerRow[]) nextAnswers[a.question_id] = a;
+      setAnswersByQuestion(nextAnswers);
+
+      const sRes = await supabase
+        .from('sessions')
+        .select('id, active_question_id')
+        .eq('id', sessionId)
+        .maybeSingle();
+
+      if (!isMountedRef.current) return;
+      if (sRes.error) {
+        setError(prettyError(sRes.error.message));
+        return;
+      }
+      const session = (sRes.data as SessionRow | null) ?? null;
+      const nextActive = session?.active_question_id ?? null;
+      setActiveQuestionId(nextActive);
+      setAnswerDraft(nextActive ? (nextAnswers[nextActive]?.body ?? '') : '');
+    } finally {
+      loadingRef.current = false;
+    }
+  }, [sessionId, supabase]);
+
+  useEffect(() => {
     answersRef.current = answersByQuestion;
   }, [answersByQuestion]);
 
@@ -117,79 +183,25 @@ export function QuestionQueueClient({
 
   const moderationQueue = useMemo(
     () => orderedQuestions.filter((q) => q.status === 'pending' || q.status === 'needs_edit'),
-    [orderedQuestions]
+    [orderedQuestions],
   );
 
   const approvedQueue = useMemo(
     () => orderedQuestions.filter((q) => q.status === 'approved'),
-    [orderedQuestions]
+    [orderedQuestions],
   );
 
   const activeQuestion = useMemo(
-    () => (activeQuestionId ? orderedQuestions.find((q) => q.id === activeQuestionId) ?? null : null),
-    [activeQuestionId, orderedQuestions]
+    () =>
+      activeQuestionId ? (orderedQuestions.find((q) => q.id === activeQuestionId) ?? null) : null,
+    [activeQuestionId, orderedQuestions],
   );
 
   useEffect(() => {
     if (!sessionId) return;
 
-    let alive = true;
+    void loadState();
 
-    async function loadInitial() {
-      setError(null);
-
-      // Questions
-      const qRes = await supabase
-        .from('questions')
-        .select('id, session_id, reporter_id, body, status, sort_rank, created_at, updated_at')
-        .eq('session_id', sessionId)
-        .order('sort_rank', { ascending: true })
-        .order('created_at', { ascending: true });
-
-      if (!alive) return;
-      if (qRes.error) {
-        setError(prettyError(qRes.error.message));
-        return;
-      }
-      setQuestions(stableSort((qRes.data ?? []) as QuestionRow[]));
-
-      // Answers
-      const aRes = await supabase
-        .from('answers')
-        .select('id, question_id, session_id, body, created_by, created_at, updated_at')
-        .eq('session_id', sessionId);
-
-      if (!alive) return;
-      if (aRes.error) {
-        // answers might not exist yet in older DBs; show error so it’s obvious
-        setError(prettyError(aRes.error.message));
-        return;
-      }
-      const next: Record<string, AnswerRow> = {};
-      for (const a of (aRes.data ?? []) as AnswerRow[]) next[a.question_id] = a;
-      setAnswersByQuestion(next);
-
-      // Active question
-      const sRes = await supabase
-        .from('sessions')
-        .select('id, active_question_id')
-        .eq('id', sessionId)
-        .maybeSingle();
-
-      if (!alive) return;
-      if (sRes.error) {
-        setError(prettyError(sRes.error.message));
-        return;
-      }
-      const session = (sRes.data as SessionRow | null) ?? null;
-      const nextActive = session?.active_question_id ?? null;
-      setActiveQuestionId(nextActive);
-      setAnswerDraft(nextActive ? next[nextActive]?.body ?? '' : '');
-    }
-
-    loadInitial();
-
-    // Realtime: questions
     const questionsChannel = supabase
       .channel(`questions:${sessionId}`)
       .on(
@@ -220,11 +232,10 @@ export function QuestionQueueClient({
 
             return prev;
           });
-        }
+        },
       )
       .subscribe();
 
-    // Realtime: answers
     const answersChannel = supabase
       .channel(`answers:${sessionId}`)
       .on(
@@ -252,11 +263,10 @@ export function QuestionQueueClient({
               return next;
             });
           }
-        }
+        },
       )
       .subscribe();
 
-    // Realtime: session active question
     const sessionChannel = supabase
       .channel(`sessions:${sessionId}`)
       .on(
@@ -266,18 +276,25 @@ export function QuestionQueueClient({
           const row = payload.new as SessionRow | null;
           const nextActive = row?.active_question_id ?? null;
           setActiveQuestionId(nextActive);
-          setAnswerDraft(nextActive ? answersRef.current[nextActive]?.body ?? '' : '');
-        }
+          setAnswerDraft(nextActive ? (answersRef.current[nextActive]?.body ?? '') : '');
+        },
       )
       .subscribe();
 
     return () => {
-      alive = false;
       supabase.removeChannel(questionsChannel);
       supabase.removeChannel(answersChannel);
       supabase.removeChannel(sessionChannel);
     };
-  }, [supabase, sessionId]);
+  }, [supabase, sessionId, loadState]);
+
+  useEffect(() => {
+    if (!sessionId) return;
+    const interval = window.setInterval(() => {
+      void loadState();
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [sessionId, loadState]);
 
   async function submitQuestion() {
     if (!activeSessionId) return;
@@ -297,7 +314,7 @@ export function QuestionQueueClient({
       status: 'pending',
       sort_rank: Number.MAX_SAFE_INTEGER,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
 
     setQuestions((prev) => stableSort([...prev, optimistic]));
@@ -325,7 +342,7 @@ export function QuestionQueueClient({
     const { error } = await supabase.rpc('set_question_status', {
       p_question_id: questionId,
       p_status: status,
-      p_note: null
+      p_note: null,
     });
     if (error) setError(prettyError(error.message));
   }
@@ -351,7 +368,7 @@ export function QuestionQueueClient({
 
     const { error } = await supabase.rpc('reorder_questions', {
       p_session_id: sessionId,
-      p_question_ids: nextIds
+      p_question_ids: nextIds,
     });
 
     if (error) setError(prettyError(error.message));
@@ -361,7 +378,7 @@ export function QuestionQueueClient({
     setError(null);
     const { error } = await supabase.rpc('set_active_question', {
       p_session_id: sessionId,
-      p_question_id: questionId
+      p_question_id: questionId,
     });
     if (error) setError(prettyError(error.message));
   }
@@ -382,7 +399,7 @@ export function QuestionQueueClient({
 
     const { error } = await supabase.rpc('post_answer', {
       p_question_id: activeQuestionId,
-      p_body: trimmed
+      p_body: trimmed,
     });
 
     setAnswerSubmitting(false);
@@ -402,24 +419,22 @@ export function QuestionQueueClient({
 
     const { error } = await supabase.rpc('resubmit_question', {
       p_question_id: questionId,
-      p_body: trimmed
+      p_body: trimmed,
     });
 
     if (error) setError(prettyError(error.message));
   }
 
   if (!sessionId) {
-    return (
-      <div className="rounded-lg border p-4 text-sm text-slate-600">
-        No active session.
-      </div>
-    );
+    return <div className="rounded-lg border p-4 text-sm text-slate-600">No active session.</div>;
   }
 
   return (
     <div className="space-y-6">
       {error ? (
-        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {error}
+        </div>
       ) : null}
 
       {/* Reporter composer */}
@@ -432,7 +447,8 @@ export function QuestionQueueClient({
 
           {activeSessionId ? null : (
             <div className="text-sm text-slate-600">
-              No live session right now. You can’t submit questions until a moderator starts the session.
+              No live session right now. You can’t submit questions until a moderator starts the
+              session.
             </div>
           )}
 
@@ -471,11 +487,19 @@ export function QuestionQueueClient({
               ) : null}
 
               {moderationQueue.map((q, idx) => (
-                <div key={q.id} className="rounded-md border p-3 space-y-2" data-testid="question-item">
+                <div
+                  key={q.id}
+                  className="rounded-md border p-3 space-y-2"
+                  data-testid="question-item"
+                >
                   <div className="flex items-start justify-between gap-2">
                     <div className="space-y-1">
-                      <div className="text-sm" data-testid="question-text">{q.body}</div>
-                      <div className="flex items-center gap-2" data-testid="question-status">{statusBadge(q.status)}</div>
+                      <div className="text-sm" data-testid="question-text">
+                        {q.body}
+                      </div>
+                      <div className="flex items-center gap-2" data-testid="question-status">
+                        {statusBadge(q.status)}
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-1">
@@ -551,9 +575,7 @@ export function QuestionQueueClient({
                         <div className="flex items-center gap-2">{statusBadge(q.status)}</div>
                       </div>
 
-                      {activeQuestionId === q.id ? (
-                        <Badge variant="secondary">active</Badge>
-                      ) : null}
+                      {activeQuestionId === q.id ? <Badge variant="secondary">active</Badge> : null}
                     </div>
 
                     <div className="flex gap-2">
@@ -588,7 +610,9 @@ export function QuestionQueueClient({
               <div className="text-sm font-semibold">Answer editor</div>
 
               {!activeQuestion ? (
-                <div className="text-sm text-slate-600">Set an active question to draft/publish an answer.</div>
+                <div className="text-sm text-slate-600">
+                  Set an active question to draft/publish an answer.
+                </div>
               ) : (
                 <>
                   <div className="text-sm">
@@ -626,7 +650,11 @@ export function QuestionQueueClient({
       <div className="rounded-lg border p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="font-semibold">Questions</div>
-          {activeQuestionId ? <Badge variant="secondary">active question set</Badge> : <Badge variant="outline">no active</Badge>}
+          {activeQuestionId ? (
+            <Badge variant="secondary">active question set</Badge>
+          ) : (
+            <Badge variant="outline">no active</Badge>
+          )}
         </div>
 
         {orderedQuestions.length === 0 ? (
@@ -639,7 +667,11 @@ export function QuestionQueueClient({
             const isActive = activeQuestionId === q.id;
 
             return (
-              <div key={q.id} className={`rounded-md border p-3 space-y-2 ${isActive ? 'border-slate-900' : ''}`} data-testid="question-item">
+              <div
+                key={q.id}
+                className={`rounded-md border p-3 space-y-2 ${isActive ? 'border-slate-900' : ''}`}
+                data-testid="question-item"
+              >
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-1">
                     <div className="text-sm">{q.body}</div>
@@ -664,8 +696,11 @@ export function QuestionQueueClient({
                         variant="outline"
                         data-testid="needs-edit-submit"
                         onClick={(e) => {
-                          const container = (e.currentTarget.closest('div')?.parentElement ?? null) as HTMLElement | null;
-                          const textarea = container?.querySelector('[data-testid="needs-edit-body"]') as HTMLTextAreaElement | null;
+                          const container = (e.currentTarget.closest('div')?.parentElement ??
+                            null) as HTMLElement | null;
+                          const textarea = container?.querySelector(
+                            '[data-testid="needs-edit-body"]',
+                          ) as HTMLTextAreaElement | null;
                           void resubmitNeedsEdit(q.id, textarea?.value ?? q.body);
                         }}
                       >

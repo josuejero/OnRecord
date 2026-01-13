@@ -6,13 +6,13 @@ import { z } from 'zod';
 const EvidenceSpanSchema = z
   .object({
     start_offset: z.number().int().min(0),
-    end_offset: z.number().int().positive()
+    end_offset: z.number().int().positive(),
   })
   .superRefine(({ start_offset, end_offset }, ctx) => {
     if (end_offset <= start_offset) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'end_offset must be greater than start_offset'
+        message: 'end_offset must be greater than start_offset',
       });
     }
   });
@@ -22,13 +22,13 @@ const SpanLabelSchema = z
     start_offset: z.number().int().min(0),
     end_offset: z.number().int().positive(),
     label_type: z.string().min(1),
-    label_value: z.string().min(1).optional().nullable()
+    label_value: z.string().min(1).optional().nullable(),
   })
   .superRefine(({ start_offset, end_offset }, ctx) => {
     if (end_offset <= start_offset) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'end_offset must be greater than start_offset'
+        message: 'end_offset must be greater than start_offset',
       });
     }
   });
@@ -37,7 +37,7 @@ const RecapKeyConcernSchema = z.object({
   title: z.string().min(1),
   detail: z.string().min(1),
   evidence_span: EvidenceSpanSchema.optional(),
-  label: SpanLabelSchema.optional()
+  label: SpanLabelSchema.optional(),
 });
 
 const RecapSchema = z.object({
@@ -46,7 +46,7 @@ const RecapSchema = z.object({
   follow_up_questions: z.array(z.string().min(1)).default([]),
   safety_notes: z.string().min(1),
   verification_notes: z.string().min(1).optional(),
-  labels: z.array(SpanLabelSchema).optional()
+  labels: z.array(SpanLabelSchema).optional(),
 });
 
 async function readResults() {

@@ -9,7 +9,7 @@ import type { LabelRow } from './types';
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium',
-  timeStyle: 'short'
+  timeStyle: 'short',
 });
 
 function formatTimestamp(value: string | null | undefined) {
@@ -17,8 +17,8 @@ function formatTimestamp(value: string | null | undefined) {
   return DATE_FORMATTER.format(new Date(value));
 }
 
-export default async function LabelerPage({ params }: { params: { sessionId: string } }) {
-  const { sessionId } = params;
+export default async function LabelerPage({ params }: { params: Promise<{ sessionId: string }> }) {
+  const { sessionId } = await params;
   await requireRole(['moderator', 'staff', 'admin_service']);
   const supabase = supabaseServer();
 
@@ -50,7 +50,9 @@ export default async function LabelerPage({ params }: { params: { sessionId: str
 
   const { data: labelRows, error: labelsError } = await supabase
     .from('transcript_span_labels')
-    .select('id, session_id, transcript_id, start_offset, end_offset, label_type, label_value, created_at')
+    .select(
+      'id, session_id, transcript_id, start_offset, end_offset, label_type, label_value, created_at',
+    )
     .eq('session_id', sessionId)
     .order('start_offset', { ascending: true });
 
@@ -82,10 +84,14 @@ export default async function LabelerPage({ params }: { params: { sessionId: str
             Session ID: <span className="font-mono text-slate-900">{session.id}</span>
           </div>
           <div>
-            Starts: <span className="font-semibold text-slate-900">{formatTimestamp(session.starts_at)}</span>
+            Starts:{' '}
+            <span className="font-semibold text-slate-900">
+              {formatTimestamp(session.starts_at)}
+            </span>
           </div>
           <div>
-            Ends: <span className="font-semibold text-slate-900">{formatTimestamp(session.ends_at)}</span>
+            Ends:{' '}
+            <span className="font-semibold text-slate-900">{formatTimestamp(session.ends_at)}</span>
           </div>
         </CardContent>
       </Card>

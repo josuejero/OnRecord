@@ -27,9 +27,9 @@ export function ExportButtonsClient(props: { slug: string }) {
         headers: {
           'Content-Type': 'application/json',
           apikey: env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
+          Authorization: `Bearer ${env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
         },
-        body: JSON.stringify({ slug: props.slug, format })
+        body: JSON.stringify({ slug: props.slug, format }),
       });
 
       if (!res.ok) throw new Error(await res.text());
@@ -42,7 +42,12 @@ export function ExportButtonsClient(props: { slug: string }) {
 
   return (
     <div className="mt-6 flex flex-wrap gap-2">
-      <Button type="button" onClick={() => run('json')} disabled={busy !== null} data-testid="export-json">
+      <Button
+        type="button"
+        onClick={() => run('json')}
+        disabled={busy !== null}
+        data-testid="export-json"
+      >
         {busy === 'json' ? 'Downloading…' : 'Download JSON'}
       </Button>
       <Button

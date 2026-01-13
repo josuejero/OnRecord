@@ -49,7 +49,7 @@ async function loadRecap(slug: string) {
 }
 
 export async function generateMetadata({
-  params
+  params,
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
@@ -69,26 +69,22 @@ export async function generateMetadata({
     title,
     description,
     alternates: {
-      canonical: `/recaps/${payload.recap.slug}`
+      canonical: `/recaps/${payload.recap.slug}`,
     },
     openGraph: {
       title,
       description,
-      type: 'article'
+      type: 'article',
     },
     twitter: {
       card: 'summary_large_image',
       title,
-      description
-    }
+      description,
+    },
   };
 }
 
-export default async function RecapPage({
-  params
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function RecapPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const payload = await loadRecap(slug);
   if (!payload) notFound();
@@ -104,7 +100,9 @@ export default async function RecapPage({
           {recap.summary ? <p className="mt-2 text-muted-foreground">{recap.summary}</p> : null}
 
           <div className="mt-4 flex flex-wrap gap-2 text-sm">
-            <span className="rounded-full border px-3 py-1">Figure: {recap.public_figure_name}</span>
+            <span className="rounded-full border px-3 py-1">
+              Figure: {recap.public_figure_name}
+            </span>
             <span className="rounded-full border px-3 py-1">Room: {recap.room_title}</span>
           </div>
 
@@ -146,7 +144,12 @@ export default async function RecapPage({
           <ul className="mt-3 space-y-2" data-testid="public-assets">
             {assets.map((a) => (
               <li key={a.id} className="rounded-lg border p-3">
-                <a href={a.public_url} className="font-medium underline" target="_blank" rel="noreferrer">
+                <a
+                  href={a.public_url}
+                  className="font-medium underline"
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   {a.original_filename ?? a.sha256}
                 </a>
                 <p className="mt-1 text-xs text-muted-foreground">

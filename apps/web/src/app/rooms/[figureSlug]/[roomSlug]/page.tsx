@@ -8,7 +8,7 @@ import {
   endSession,
   publishRecap,
   startSession,
-  unpublishRecap
+  unpublishRecap,
 } from './actions';
 import { QuestionQueueClient } from './QuestionQueueClient';
 import { AssetUploadPanel } from './AssetUploadPanel';
@@ -42,7 +42,7 @@ function fmt(ts: string | null) {
 }
 
 export default async function RoomDetailPage({
-  params
+  params,
 }: {
   params: Promise<{ figureSlug: string; roomSlug: string }>;
 }) {
@@ -63,7 +63,9 @@ export default async function RoomDetailPage({
         <CardHeader>
           <CardTitle>Room not found</CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-slate-600">Unable to resolve public figure.</CardContent>
+        <CardContent className="text-sm text-slate-600">
+          Unable to resolve public figure.
+        </CardContent>
       </Card>
     );
   }
@@ -96,9 +98,7 @@ export default async function RoomDetailPage({
   const live = list.find((s) => s.status === 'live') ?? null;
   const activeSessionId = live?.id ?? null;
   const latest = live ?? list[0] ?? null;
-  const publicRecapSlug = latest
-    ? `${pf.slug}-${roomSlug}-${latest.id.slice(0, 8)}`
-    : null;
+  const publicRecapSlug = latest ? `${pf.slug}-${roomSlug}-${latest.id.slice(0, 8)}` : null;
 
   const canModerate = role === 'moderator' || role === 'staff' || role === 'admin_service';
   const canCreate = role === 'staff' || role === 'admin_service';
@@ -127,7 +127,7 @@ export default async function RoomDetailPage({
           model_id: row.model_id,
           include_in_export: row.include_in_export,
           created_at: row.created_at,
-          recap: parsed.data
+          recap: parsed.data,
         });
       }
     }
@@ -168,11 +168,12 @@ export default async function RoomDetailPage({
           {latest ? (
             <>
               <div className="flex items-center gap-2">
-                <Badge>{latest.status}</Badge>
+                <Badge data-testid="session-status-badge">{latest.status}</Badge>
                 <span className="text-slate-500">(latest)</span>
               </div>
               <div>
-                Starts: <span className="font-semibold text-slate-900">{fmt(latest.starts_at)}</span>
+                Starts:{' '}
+                <span className="font-semibold text-slate-900">{fmt(latest.starts_at)}</span>
               </div>
               <div>
                 Ends: <span className="font-semibold text-slate-900">{fmt(latest.ends_at)}</span>
@@ -211,29 +212,31 @@ export default async function RoomDetailPage({
                   ) : null}
                 </div>
               ) : (
-                <div className="text-slate-500">Moderation controls are available to moderators and staff.</div>
+                <div className="text-slate-500">
+                  Moderation controls are available to moderators and staff.
+                </div>
               )}
 
-                  {canModerate && publicRecapSlug ? (
-                    <div className="pt-3 space-y-2">
-                      <form action={publishRecap} className="flex flex-wrap gap-2">
-                        <input type="hidden" name="session_id" value={latest.id} />
-                        <input type="hidden" name="figure_slug" value={pf.slug} />
-                        <input type="hidden" name="room_slug" value={roomSlug} />
-                        <input type="hidden" name="public_figure_name" value={pf.name} />
-                        <input type="hidden" name="room_title" value={room.title} />
-                        <input type="hidden" name="revalidate" value={revalidate} />
-                        <input
-                          type="hidden"
-                          id="public-recap-summary"
-                          name="summary"
-                          value=""
-                          aria-hidden="true"
-                        />
-                        <Button type="submit" variant="outline" size="sm">
-                          Publish recap
-                        </Button>
-                      </form>
+              {canModerate && publicRecapSlug ? (
+                <div className="pt-3 space-y-2">
+                  <form action={publishRecap} className="flex flex-wrap gap-2">
+                    <input type="hidden" name="session_id" value={latest.id} />
+                    <input type="hidden" name="figure_slug" value={pf.slug} />
+                    <input type="hidden" name="room_slug" value={roomSlug} />
+                    <input type="hidden" name="public_figure_name" value={pf.name} />
+                    <input type="hidden" name="room_title" value={room.title} />
+                    <input type="hidden" name="revalidate" value={revalidate} />
+                    <input
+                      type="hidden"
+                      id="public-recap-summary"
+                      name="summary"
+                      value=""
+                      aria-hidden="true"
+                    />
+                    <Button type="submit" variant="outline" size="sm">
+                      Publish recap
+                    </Button>
+                  </form>
 
                   <div className="text-xs text-slate-500">
                     Public URL:
@@ -270,9 +273,15 @@ export default async function RoomDetailPage({
         </CardHeader>
         <CardContent className="text-sm text-slate-600">
           {live ? (
-            <QuestionQueueClient sessionId={live.id} activeSessionId={activeSessionId} role={role} />
+            <QuestionQueueClient
+              sessionId={live.id}
+              activeSessionId={activeSessionId}
+              role={role}
+            />
           ) : (
-            <div className="text-slate-500">No live session. Questions open when the session is live.</div>
+            <div className="text-slate-500">
+              No live session. Questions open when the session is live.
+            </div>
           )}
         </CardContent>
       </Card>
@@ -309,7 +318,9 @@ export default async function RoomDetailPage({
         <div className="space-y-4">
           <AssetUploadPanel sessionId={latest.id} revalidatePath={revalidate} />
           {recapError ? (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700">{recapError}</div>
+            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+              {recapError}
+            </div>
           ) : null}
           <RecapPanel
             key={`${latest.id}-${recaps[0]?.id ?? 'none'}`}

@@ -3,7 +3,9 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
 ### Added
+
 - Phase 0 foundations: monorepo + web shell + supabase local + CI + docs scaffolding
 - Phase 7 hardening
   - CI workflow now runs format/lint/typecheck/unit tests/build/Playwright + repo smoke, seeds data, and uploads Playwright artifacts for easier triage.

@@ -1,10 +1,10 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './test.setup';
 import { loginAs } from './helpers/auth';
+import { roomPath } from './helpers/rooms';
 
 test('staff can label spans and persistence remains after reload', async ({ page }) => {
   await loginAs(page, { email: 'staff@onrecord.local' });
-  await page.goto('/rooms');
-  await page.getByRole('link', { name: 'Open room' }).first().click();
+  await page.goto(roomPath);
 
   const sessionId = await page.getByTestId('session-id').textContent();
   expect(sessionId).toBeTruthy();
@@ -19,21 +19,24 @@ test('staff can label spans and persistence remains after reload', async ({ page
   const end = start + snippet.length;
 
   await transcriptArea.evaluate(
-    (el, selection) => {
+    (el: HTMLTextAreaElement, selection: number[]) => {
+      if (selection.length < 2) return;
       el.setSelectionRange(selection[0], selection[1]);
       el.dispatchEvent(new Event('select'));
     },
-    [start, end]
+    [start, end],
   );
 
   await page.getByLabel('Label value (optional)').fill('policy rollout');
   await page.getByTestId('create-label-button').click();
 
-  const snippetLocator = page.getByText(snippet, { exact: false });
-  await expect(snippetLocator).toBeVisible();
+  const snippetLocator = page
+    .locator('div[data-testid^="label-snippet-"]')
+    .filter({ hasText: snippet });
+  await expect(snippetLocator.first()).toBeVisible();
 
   await page.reload();
-  await expect(page.getByText(snippet, { exact: false })).toBeVisible();
+  await expect(snippetLocator.first()).toBeVisible();
 
   const labelRow = page.locator('div[data-testid^="label-row-"]').filter({ hasText: snippet });
   await expect(labelRow).toBeVisible();

@@ -6,7 +6,8 @@ export function AssetUploadPanel(props: { sessionId: string; revalidatePath: str
     <section className="mt-8 rounded-xl border p-4">
       <h2 className="text-lg font-semibold">Assets</h2>
       <p className="text-sm text-muted-foreground">
-        Upload a file as a public recap asset (visible on the public recap page) or a private session asset.
+        Upload a file as a public recap asset (visible on the public recap page) or a private
+        session asset.
       </p>
 
       <form className="mt-4 flex flex-col gap-3" action={uploadAsset} encType="multipart/form-data">
@@ -28,7 +29,9 @@ export function AssetUploadPanel(props: { sessionId: string; revalidatePath: str
         <input type="file" name="file" required className="text-sm" data-testid="asset-file" />
 
         <div className="flex items-center gap-2">
-          <Button type="submit" data-testid="asset-submit">Upload</Button>
+          <Button type="submit" data-testid="asset-submit">
+            Upload
+          </Button>
           <p className="text-xs text-muted-foreground">Recommended: images, PDF, text. Max 25MB.</p>
         </div>
       </form>

@@ -68,7 +68,7 @@ export async function createLabel(formData: FormData) {
   if (transcriptError) throw new Error(transcriptError.message);
   if (!transcriptRow) throw new Error('transcript_missing');
 
-  const transcriptText = (transcriptRow.cleaned_text ?? transcriptRow.raw_text ?? '');
+  const transcriptText = transcriptRow.cleaned_text ?? transcriptRow.raw_text ?? '';
   if (startOffset < 0 || endOffset > transcriptText.length) {
     throw new Error('selection_out_of_bounds');
   }
@@ -94,7 +94,7 @@ export async function createLabel(formData: FormData) {
     end_offset: endOffset,
     label_type: labelType,
     label_value: labelValue,
-    created_by: user.id
+    created_by: user.id,
   });
 
   if (insertError) throw new Error(insertError.message);

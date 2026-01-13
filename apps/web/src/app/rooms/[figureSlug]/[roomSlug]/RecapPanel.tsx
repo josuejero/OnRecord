@@ -29,14 +29,21 @@ type RecapPanelProps = {
 };
 
 export function RecapPanel({ sessionId, revalidatePath, recaps, featureFlags }: RecapPanelProps) {
-  const sortedRecaps = useMemo(() => [...recaps].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()), [recaps]);
+  const sortedRecaps = useMemo(
+    () =>
+      [...recaps].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      ),
+    [recaps],
+  );
   const defaultRecapId = sortedRecaps[0]?.id ?? null;
   const defaultPromptVersion = sortedRecaps[0]?.prompt_version ?? 'recap-v1';
 
   const [selectedRecapId, setSelectedRecapId] = useState<string | null>(defaultRecapId);
   const [promptVersion, setPromptVersion] = useState(defaultPromptVersion);
 
-  const selectedRecap = sortedRecaps.find((recap) => recap.id === selectedRecapId) ?? sortedRecaps[0] ?? null;
+  const selectedRecap =
+    sortedRecaps.find((recap) => recap.id === selectedRecapId) ?? sortedRecaps[0] ?? null;
   const [pendingAction, setPendingAction] = useState<'regenerate' | 'attach' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [publicCopyMessage, setPublicCopyMessage] = useState<string | null>(null);
@@ -74,7 +81,9 @@ export function RecapPanel({ sessionId, revalidatePath, recaps, featureFlags }: 
       setPendingAction('attach');
       return setRecapExportAttachment(formData)
         .catch((err) => {
-          setError(typeof err?.message === 'string' ? err.message : 'Unable to update export attachment.');
+          setError(
+            typeof err?.message === 'string' ? err.message : 'Unable to update export attachment.',
+          );
         })
         .finally(() => setPendingAction(null));
     });
@@ -115,7 +124,8 @@ export function RecapPanel({ sessionId, revalidatePath, recaps, featureFlags }: 
           <Badge variant="outline">Draft</Badge>
         </div>
         <p className="text-xs text-muted-foreground">
-          Provider: {featureFlags.aiRecapProvider} · {selectedRecap ? 'Structured output saved as draft' : 'Run generation to create a recap'}
+          Provider: {featureFlags.aiRecapProvider} ·{' '}
+          {selectedRecap ? 'Structured output saved as draft' : 'Run generation to create a recap'}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -154,11 +164,22 @@ export function RecapPanel({ sessionId, revalidatePath, recaps, featureFlags }: 
             <div className="space-y-1 text-xs text-muted-foreground">
               <div className="flex items-center justify-between gap-2">
                 <span>Prompt version</span>
-                <Button size="sm" variant="outline" type="button" onClick={() => setPromptVersion(`recap-${Math.random().toString(36).slice(2, 6)}`)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  type="button"
+                  onClick={() =>
+                    setPromptVersion(`recap-${Math.random().toString(36).slice(2, 6)}`)
+                  }
+                >
                   New version
                 </Button>
               </div>
-              <Input value={promptVersion} onChange={(event) => setPromptVersion(event.target.value)} placeholder="recap-v1" />
+              <Input
+                value={promptVersion}
+                onChange={(event) => setPromptVersion(event.target.value)}
+                placeholder="recap-v1"
+              />
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -170,7 +191,13 @@ export function RecapPanel({ sessionId, revalidatePath, recaps, featureFlags }: 
               >
                 {pendingAction === 'regenerate' ? 'Regenerating…' : 'Regenerate recap'}
               </Button>
-              <Button type="button" variant="outline" size="sm" onClick={handleCopy} disabled={!selectedRecap}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleCopy}
+                disabled={!selectedRecap}
+              >
                 Copy to clipboard
               </Button>
               {selectedRecap ? (
@@ -202,7 +229,9 @@ export function RecapPanel({ sessionId, revalidatePath, recaps, featureFlags }: 
             <div className="space-y-1">
               <p className="text-lg font-semibold text-slate-900">{selectedRecap.recap.summary}</p>
               {selectedRecap.recap.verification_notes ? (
-                <p className="text-xs text-muted-foreground">{selectedRecap.recap.verification_notes}</p>
+                <p className="text-xs text-muted-foreground">
+                  {selectedRecap.recap.verification_notes}
+                </p>
               ) : null}
             </div>
 
@@ -210,12 +239,18 @@ export function RecapPanel({ sessionId, revalidatePath, recaps, featureFlags }: 
               <p className="text-sm font-medium text-slate-700">Key concerns</p>
               <div className="space-y-2">
                 {selectedRecap.recap.key_concerns.map((concern, idx) => (
-                  <div key={`${concern.title}-${idx}`} className="rounded-md border border-slate-200 bg-white p-3 text-sm">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">{concern.title}</p>
+                  <div
+                    key={`${concern.title}-${idx}`}
+                    className="rounded-md border border-slate-200 bg-white p-3 text-sm"
+                  >
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      {concern.title}
+                    </p>
                     <p className="mt-1 text-slate-900">{concern.detail}</p>
                     {concern.evidence_span ? (
                       <p className="text-xs text-slate-500">
-                        Evidence span: offset {concern.evidence_span.start_offset}–{concern.evidence_span.end_offset}
+                        Evidence span: offset {concern.evidence_span.start_offset}–
+                        {concern.evidence_span.end_offset}
                       </p>
                     ) : null}
                   </div>

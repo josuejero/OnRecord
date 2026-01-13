@@ -13,7 +13,7 @@ export default function StatusChip({ flags }: StatusChipProps) {
     makeLabel('Voice upload', flags.voiceUploadEnabled),
     makeLabel('AI recap', flags.aiRecapEnabled),
     makeLabel('Labeler', flags.labelerEnabled),
-    makeLabel('Evals', flags.evalsPageEnabled)
+    makeLabel('Evals', flags.evalsPageEnabled),
   ];
 
   return (

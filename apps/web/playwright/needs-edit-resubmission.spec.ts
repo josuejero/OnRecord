@@ -1,6 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
-
-const roomPath = '/rooms/demo-figure/demo-room';
+import { test, expect, type Page } from './test.setup';
+import { ensureSessionLive, roomPath } from './helpers/rooms';
 
 async function login(page: Page, email: string, password = 'password123!') {
   await page.goto('/login');
@@ -15,6 +14,7 @@ test('reporter can resubmit only when needs_edit', async ({ browser }) => {
   const modPage = await modCtx.newPage();
   await login(modPage, 'moderator@onrecord.local');
   await modPage.goto(roomPath);
+  await ensureSessionLive(modPage);
 
   const repCtx = await browser.newContext();
   const repPage = await repCtx.newPage();
@@ -31,7 +31,9 @@ test('reporter can resubmit only when needs_edit', async ({ browser }) => {
   await modPage.getByTestId('moderate-needs-edit').first().click();
 
   // Reporter should see needs edit
-  await expect(repPage.getByTestId('question-status').first()).toHaveText(/needs edit/i, { timeout: 15_000 });
+  await expect(repPage.getByTestId('question-status').first()).toHaveText(/needs edit/i, {
+    timeout: 15_000,
+  });
 
   // Resubmit
   const revised = 'can you share a specific timeline for the plan, including milestones?';
@@ -39,5 +41,7 @@ test('reporter can resubmit only when needs_edit', async ({ browser }) => {
   await repPage.getByTestId('needs-edit-submit').first().click();
 
   // Back to pending
-  await expect(repPage.getByTestId('question-status').first()).toHaveText(/pending/i, { timeout: 15_000 });
+  await expect(repPage.getByTestId('question-status').first()).toHaveText(/pending/i, {
+    timeout: 15_000,
+  });
 });

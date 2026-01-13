@@ -4,7 +4,7 @@ export const LABEL_TYPES = [
   'caregiver_task',
   'mood_sentiment',
   'appointment',
-  'safety_risk'
+  'safety_risk',
 ] as const;
 
 export type LabelType = (typeof LABEL_TYPES)[number];

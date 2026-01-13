@@ -51,7 +51,7 @@ export default async function InsightsPage() {
     .select(
       `id, status, starts_at, ends_at,
        rooms ( title, slug, public_figures ( name, slug ) ),
-       session_insights ( computed_at, questions_total, questions_answered, questions_rejected, rejection_rate, avg_time_to_answer_seconds, transcript_word_count, top_terms )`
+       session_insights ( computed_at, questions_total, questions_answered, questions_rejected, rejection_rate, avg_time_to_answer_seconds, transcript_word_count, top_terms )`,
     )
     .order('starts_at', { ascending: false })
     .limit(50);
@@ -65,8 +65,8 @@ export default async function InsightsPage() {
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold">Insights</h1>
         <p className="text-sm text-muted-foreground">
-          Session-level metrics (cached in <code className="font-mono">session_insights</code>).
-          Run &ldquo;Cleanup + refresh insights&rdquo; from a room to update.
+          Session-level metrics (cached in <code className="font-mono">session_insights</code>). Run
+          &ldquo;Cleanup + refresh insights&rdquo; from a room to update.
         </p>
       </div>
 
@@ -113,7 +113,9 @@ export default async function InsightsPage() {
                   </td>
                   <td className="p-3">{ins?.questions_rejected ?? '—'}</td>
                   <td className="p-3">
-                    {rejectionRateValue != null ? `${(Number(rejectionRateValue) * 100).toFixed(1)}%` : '—'}
+                    {rejectionRateValue != null
+                      ? `${(Number(rejectionRateValue) * 100).toFixed(1)}%`
+                      : '—'}
                   </td>
                   <td className="p-3">
                     {avgTimeValue != null ? fmtSeconds(Number(avgTimeValue)) : '—'}
@@ -139,7 +141,8 @@ export default async function InsightsPage() {
       </div>
 
       <div className="text-xs text-muted-foreground">
-        Tip: If a row shows dashes, open that room session and run &ldquo;Cleanup + refresh insights&rdquo; to populate the cache.
+        Tip: If a row shows dashes, open that room session and run &ldquo;Cleanup + refresh
+        insights&rdquo; to populate the cache.
       </div>
     </div>
   );

@@ -101,15 +101,14 @@ function extractTopTerms(text: string, limit = 12): TopTerm[] {
     'some',
     'more',
     'most',
-    'very'
+    'very',
   ]);
 
   const counts = new Map<string, number>();
   for (const token of text
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, ' ')
-    .split(/\s+/)
-  ) {
+    .split(/\s+/)) {
     if (!token) continue;
     if (token.length < 4) continue;
     if (stop.has(token)) continue;
@@ -125,7 +124,7 @@ function extractTopTerms(text: string, limit = 12): TopTerm[] {
 function json(res: unknown, status = 200) {
   return new Response(JSON.stringify(res), {
     status,
-    headers: { 'Content-Type': 'application/json' }
+    headers: { 'Content-Type': 'application/json' },
   });
 }
 
@@ -141,7 +140,7 @@ Deno.serve(async (req) => {
 
   const authHeader = req.headers.get('Authorization') ?? '';
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    global: { headers: { Authorization: authHeader } }
+    global: { headers: { Authorization: authHeader } },
   });
 
   const body = (await req.json().catch(() => ({}))) as Body;
@@ -165,7 +164,7 @@ Deno.serve(async (req) => {
   if (!dry_run) {
     const updatePayload: Record<string, unknown> = {
       cleaned_text: cleaned,
-      processed_at: new Date().toISOString()
+      processed_at: new Date().toISOString(),
     };
 
     const metaPayload = buildMetaPayload(transcript.meta, body);
@@ -182,7 +181,7 @@ Deno.serve(async (req) => {
 
     const { data: insights, error: rpcErr } = await supabase.rpc('refresh_session_insights', {
       p_session_id: session_id,
-      p_top_terms: topTerms
+      p_top_terms: topTerms,
     });
 
     if (rpcErr) return json({ error: 'insights_refresh_failed', details: rpcErr.message }, 400);
@@ -192,7 +191,7 @@ Deno.serve(async (req) => {
       dry_run,
       cleaned_preview: cleaned.slice(0, 800),
       top_terms: topTerms,
-      insights
+      insights,
     });
   }
 
@@ -200,6 +199,6 @@ Deno.serve(async (req) => {
     ok: true,
     dry_run,
     cleaned_preview: cleaned.slice(0, 800),
-    top_terms: topTerms
+    top_terms: topTerms,
   });
 });

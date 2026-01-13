@@ -35,7 +35,7 @@ export async function TranscriptPanel({ sessionId, revalidate }: TranscriptPanel
   const { data } = await supabase
     .from('session_insights')
     .select(
-      'computed_at, questions_total, questions_answered, questions_rejected, rejection_rate, avg_time_to_answer_seconds, top_terms, transcript_word_count'
+      'computed_at, questions_total, questions_answered, questions_rejected, rejection_rate, avg_time_to_answer_seconds, top_terms, transcript_word_count',
     )
     .eq('session_id', sessionId)
     .maybeSingle();
@@ -52,7 +52,9 @@ export async function TranscriptPanel({ sessionId, revalidate }: TranscriptPanel
 
   const avgTimeSeconds = insights?.avg_time_to_answer_seconds;
   const formattedAvgTime =
-    avgTimeSeconds !== null && avgTimeSeconds !== undefined ? `${Math.round(Number(avgTimeSeconds))}s` : '—';
+    avgTimeSeconds !== null && avgTimeSeconds !== undefined
+      ? `${Math.round(Number(avgTimeSeconds))}s`
+      : '—';
 
   return (
     <Card>
@@ -82,11 +84,17 @@ export async function TranscriptPanel({ sessionId, revalidate }: TranscriptPanel
 
         {transcript?.cleaned_text ? (
           <details className="rounded-md border p-3">
-            <summary className="cursor-pointer text-sm font-medium">Cleaned transcript preview</summary>
-            <pre className="mt-2 whitespace-pre-wrap text-xs">{transcript.cleaned_text.slice(0, 1200)}</pre>
+            <summary className="cursor-pointer text-sm font-medium">
+              Cleaned transcript preview
+            </summary>
+            <pre className="mt-2 whitespace-pre-wrap text-xs">
+              {transcript.cleaned_text.slice(0, 1200)}
+            </pre>
           </details>
         ) : (
-          <div className="text-sm text-muted-foreground">No cleaned transcript yet. Run cleanup to generate it.</div>
+          <div className="text-sm text-muted-foreground">
+            No cleaned transcript yet. Run cleanup to generate it.
+          </div>
         )}
 
         {insights ? (
@@ -116,7 +124,9 @@ export async function TranscriptPanel({ sessionId, revalidate }: TranscriptPanel
             )}
           </div>
         ) : (
-          <div className="text-sm text-muted-foreground">No insights yet. Save a transcript, then run cleanup.</div>
+          <div className="text-sm text-muted-foreground">
+            No insights yet. Save a transcript, then run cleanup.
+          </div>
         )}
       </CardContent>
     </Card>

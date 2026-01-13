@@ -62,13 +62,21 @@ export default function LoginPage() {
         </form>
 
         {error ? (
-          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
+          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {error}
+          </div>
         ) : null}
 
         <div className="text-xs text-slate-500 space-y-1">
           <p>Local demo accounts are created in Step 7.</p>
-          <p>If cookies don’t stick after signing in, hard refresh and re-check `NEXT_PUBLIC_SUPABASE_*` env values.</p>
-          <p>If the anon key is wrong, login may succeed client-side but server routes will fail to resolve user.</p>
+          <p>
+            If cookies don’t stick after signing in, hard refresh and re-check
+            `NEXT_PUBLIC_SUPABASE_*` env values.
+          </p>
+          <p>
+            If the anon key is wrong, login may succeed client-side but server routes will fail to
+            resolve user.
+          </p>
         </div>
       </CardContent>
     </Card>

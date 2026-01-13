@@ -31,5 +31,10 @@
     "zod": "^3.25.76",
     "promptfoo": "0.120.11",
     "supabase": "2.70.5"
+  },
+  "pnpm": {
+    "overrides": {
+      "sharp": "0.34.5"
+    }
   }
 }

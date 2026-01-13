@@ -17,7 +17,9 @@ export default async function ReporterDashboard() {
         <div>
           Role: <span className="font-semibold text-slate-900">{role}</span>
         </div>
-        <p className="text-slate-500">Phase 2 adds room/session navigation; Phase 3 adds question submission.</p>
+        <p className="text-slate-500">
+          Phase 2 adds room/session navigation; Phase 3 adds question submission.
+        </p>
         <Link className="inline-flex text-slate-900 underline" href="/rooms">
           Browse rooms
         </Link>

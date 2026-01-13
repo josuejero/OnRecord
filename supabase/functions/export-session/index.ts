@@ -96,7 +96,12 @@ type ExportPayload = RecapPayload & {
   ai_outputs?: AiOutputRow[];
 };
 
-const VALID_INCLUDES: ReadonlySet<ExportInclude> = new Set(["transcript", "insights", "labels", "ai_outputs"]);
+const VALID_INCLUDES: ReadonlySet<ExportInclude> = new Set([
+  'transcript',
+  'insights',
+  'labels',
+  'ai_outputs',
+]);
 
 function csvEscape(value: unknown): string {
   const s = String(value ?? '');
@@ -123,7 +128,7 @@ function toCsv(payload: RecapPayload): string {
     'answered_at',
     'sort_rank',
     'question',
-    'answer'
+    'answer',
   ];
 
   const rows = payload.items.map((it) => [
@@ -137,7 +142,7 @@ function toCsv(payload: RecapPayload): string {
     it.answered_at,
     it.sort_rank,
     it.question_body,
-    it.answer_body
+    it.answer_body,
   ]);
 
   const lines = [header.map(csvEscape).join(',')];
@@ -179,8 +184,8 @@ function buildJsonResponse(payload: ExportPayload, filenameBase: string) {
     status: 200,
     headers: {
       'content-type': 'application/json; charset=utf-8',
-      'content-disposition': `attachment; filename="${filenameBase}.json"`
-    }
+      'content-disposition': `attachment; filename="${filenameBase}.json"`,
+    },
   });
 }
 
@@ -189,8 +194,8 @@ function buildJsonlResponse(lines: string[], filenameBase: string) {
     status: 200,
     headers: {
       'content-type': 'application/x-ndjson; charset=utf-8',
-      'content-disposition': `attachment; filename="${filenameBase}.jsonl"`
-    }
+      'content-disposition': `attachment; filename="${filenameBase}.jsonl"`,
+    },
   });
 }
 
@@ -200,8 +205,8 @@ function buildCsvResponse(payload: RecapPayload, filenameBase: string) {
     status: 200,
     headers: {
       'content-type': 'text/csv; charset=utf-8',
-      'content-disposition': `attachment; filename="${filenameBase}.csv"`
-    }
+      'content-disposition': `attachment; filename="${filenameBase}.csv"`,
+    },
   });
 }
 
@@ -217,20 +222,24 @@ Deno.serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const url = new URL(req.url);
 
-    const body = req.method === 'POST' ? await req.json().catch(() => ({} as Record<string, unknown>)) : {};
+    const body =
+      req.method === 'POST' ? await req.json().catch(() => ({}) as Record<string, unknown>) : {};
     const rawSlug = typeof body.slug === 'string' ? body.slug : url.searchParams.get('slug');
     const slug = rawSlug?.trim();
 
     if (!slug) return new Response('Missing slug', { status: 400 });
 
-    const formatValue = typeof body.format === 'string' ? body.format : url.searchParams.get('format');
+    const formatValue =
+      typeof body.format === 'string' ? body.format : url.searchParams.get('format');
     const format = resolveFormat(formatValue);
 
     const includeParams = [body.include, ...url.searchParams.getAll('include')];
     const includes = parseIncludes(includeParams);
 
     if (format === 'jsonl' && !includes.has('labels') && !includes.has('ai_outputs')) {
-      return new Response('jsonl export requires include=labels or include=ai_outputs', { status: 400 });
+      return new Response('jsonl export requires include=labels or include=ai_outputs', {
+        status: 400,
+      });
     }
 
     const { data, error } = await supabase.rpc('get_public_recap', { p_slug: slug });
@@ -244,10 +253,13 @@ Deno.serve(async (req) => {
     if (includes.has('transcript')) {
       const { data: transcript, error: transcriptErr } = await supabase
         .from('session_transcripts')
-        .select('session_id, source, raw_text, cleaned_text, meta, processed_at, created_at, updated_at, created_by')
+        .select(
+          'session_id, source, raw_text, cleaned_text, meta, processed_at, created_at, updated_at, created_by',
+        )
         .eq('session_id', sessionId)
         .maybeSingle();
-      if (transcriptErr) return new Response('Transcript fetch failed: ' + transcriptErr.message, { status: 500 });
+      if (transcriptErr)
+        return new Response('Transcript fetch failed: ' + transcriptErr.message, { status: 500 });
       payload.transcript = transcript ?? null;
     }
 
@@ -255,22 +267,26 @@ Deno.serve(async (req) => {
       const { data: insights, error: insightErr } = await supabase
         .from('session_insights')
         .select(
-          'session_id, computed_at, questions_total, questions_approved, questions_answered, questions_rejected, rejection_rate, avg_time_to_answer_seconds, top_terms, transcript_word_count, meta, created_at, updated_at'
+          'session_id, computed_at, questions_total, questions_approved, questions_answered, questions_rejected, rejection_rate, avg_time_to_answer_seconds, top_terms, transcript_word_count, meta, created_at, updated_at',
         )
         .eq('session_id', sessionId)
         .maybeSingle();
-      if (insightErr) return new Response('Insights fetch failed: ' + insightErr.message, { status: 500 });
+      if (insightErr)
+        return new Response('Insights fetch failed: ' + insightErr.message, { status: 500 });
       payload.insights = insights ?? null;
     }
 
     if (includes.has('labels')) {
       const { data: labels, error: labelsErr } = await supabase
         .from('transcript_span_labels')
-        .select('id, session_id, transcript_id, start_offset, end_offset, label_type, label_value, created_by, created_at')
+        .select(
+          'id, session_id, transcript_id, start_offset, end_offset, label_type, label_value, created_by, created_at',
+        )
         .eq('session_id', sessionId)
         .order('start_offset', { ascending: true })
         .order('created_at', { ascending: true });
-      if (labelsErr) return new Response('Labels fetch failed: ' + labelsErr.message, { status: 500 });
+      if (labelsErr)
+        return new Response('Labels fetch failed: ' + labelsErr.message, { status: 500 });
       payload.labels = labels ?? [];
     }
 
@@ -280,7 +296,7 @@ Deno.serve(async (req) => {
       let aiOutputsQuery = supabase
         .from('transcript_ai_outputs')
         .select(
-          'id, session_id, transcript_id, prompt_version, provider, model_id, output, include_in_export, created_by, created_at'
+          'id, session_id, transcript_id, prompt_version, provider, model_id, output, include_in_export, created_by, created_at',
         )
         .eq('session_id', sessionId)
         .order('created_at', { ascending: true });
@@ -290,7 +306,8 @@ Deno.serve(async (req) => {
       }
 
       const { data: outputs, error: outputsErr } = await aiOutputsQuery;
-      if (outputsErr) return new Response('AI outputs fetch failed: ' + outputsErr.message, { status: 500 });
+      if (outputsErr)
+        return new Response('AI outputs fetch failed: ' + outputsErr.message, { status: 500 });
 
       if (requestedAiOutputs) {
         payload.ai_outputs = outputs ?? [];

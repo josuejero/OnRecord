@@ -1,9 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 
-export async function loginAs(
-  page: Page,
-  opts: { email: string; password?: string }
-) {
+export async function loginAs(page: Page, opts: { email: string; password?: string }) {
   const password = opts.password ?? 'password123!';
 
   await page.goto('/login');

@@ -3,6 +3,7 @@
 This maps acceptance criteria to automated checks.
 
 ## Phase 7
+
 - Q7.1 CI gates
   - GitHub Actions workflow runs: format, lint, typecheck, build, Playwright
 - Q7.2 `SECURITY.md`
@@ -15,7 +16,9 @@ This maps acceptance criteria to automated checks.
   - Manual: `docs/reviewers.md` exists and works end-to-end
 
 ## Automated test inventory
+
 ### Web Playwright (apps/web/playwright)
+
 - `auth.spec.ts`: login and role behavior
 - `sessions.spec.ts`: session lifecycle
 - `questions.spec.ts`: submission + queue ordering
@@ -26,7 +29,9 @@ This maps acceptance criteria to automated checks.
 - `a11y.spec.ts`: serious/critical a11y violations
 
 ### Policy negative tests
+
 - `apps/web/scripts/rls-negative-tests.mjs`: must deny unauthorized writes
 
 ### Repo smoke e2e
+
 - `e2e/tests/home.spec.ts`: home → demo room

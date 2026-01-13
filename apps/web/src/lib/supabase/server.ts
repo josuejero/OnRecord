@@ -21,10 +21,10 @@ export function supabaseServer() {
       async getAll() {
         const store = await cookieStorePromise;
         return store.getAll();
-      }
+      },
     },
     cookieOptions: {
-      name: getAuthCookieName(env.NEXT_PUBLIC_SUPABASE_URL)
-    }
+      name: getAuthCookieName(env.NEXT_PUBLIC_SUPABASE_URL),
+    },
   });
 }

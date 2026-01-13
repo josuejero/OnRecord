@@ -11,7 +11,8 @@ export default function DemoRoomPage() {
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-slate-500">
           <p>
-            Public figure: <span className="font-semibold text-slate-900">{demoRoom.publicFigure}</span>
+            Public figure:{' '}
+            <span className="font-semibold text-slate-900">{demoRoom.publicFigure}</span>
           </p>
         </CardContent>
       </Card>

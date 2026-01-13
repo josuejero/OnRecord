@@ -9,7 +9,9 @@ export async function requireUser() {
   return data.user;
 }
 
-export async function requireRole(allowed: Array<'reporter' | 'moderator' | 'staff' | 'admin_service'>) {
+export async function requireRole(
+  allowed: Array<'reporter' | 'moderator' | 'staff' | 'admin_service'>,
+) {
   const supabase = supabaseServer();
   const user = await requireUser();
 

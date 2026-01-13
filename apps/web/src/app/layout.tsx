@@ -7,7 +7,7 @@ import { getFeatureFlags } from '@/lib/config/features';
 
 export const metadata: Metadata = {
   title: 'OnRecord',
-  description: 'Verified, person-centric press conference rooms with on-record transcripts.'
+  description: 'Verified, person-centric press conference rooms with on-record transcripts.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

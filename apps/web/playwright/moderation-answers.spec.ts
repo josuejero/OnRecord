@@ -1,6 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
-
-const roomPath = '/rooms/demo-figure/demo-room';
+import { test, expect, type Page } from './test.setup';
+import { ensureSessionLive, roomPath } from './helpers/rooms';
 
 async function login(page: Page, email: string, password = 'password123!') {
   await page.goto('/login');
@@ -15,6 +14,7 @@ test('moderator can approve + answer and reporter sees it live', async ({ browse
   const modPage = await modCtx.newPage();
   await login(modPage, 'moderator@onrecord.local');
   await modPage.goto(roomPath);
+  await ensureSessionLive(modPage);
 
   const repCtx = await browser.newContext();
   const repPage = await repCtx.newPage();
@@ -32,7 +32,9 @@ test('moderator can approve + answer and reporter sees it live', async ({ browse
   await modPage.getByTestId('moderate-approve').first().click();
 
   // Reporter sees approved
-  await expect(repPage.getByTestId('question-status').first()).toHaveText(/approved/i, { timeout: 15_000 });
+  await expect(repPage.getByTestId('question-status').first()).toHaveText(/approved/i, {
+    timeout: 15_000,
+  });
 
   // Moderator sets active
   await modPage.getByTestId('active-set').first().click();

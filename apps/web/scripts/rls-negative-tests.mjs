@@ -39,7 +39,8 @@ async function assertDenied(promise, label) {
 
 async function assertAllowed(promise, label) {
   const res = await promise;
-  if (res.error) throw new Error(`Expected allowed but got error for ${label}: ${res.error.message}`);
+  if (res.error)
+    throw new Error(`Expected allowed but got error for ${label}: ${res.error.message}`);
   console.log(`✅ allowed as expected: ${label}`);
 }
 
@@ -53,17 +54,17 @@ async function main() {
 
   await assertDenied(
     reporter.from('public_figures').insert({ slug: 'should-fail', name: 'Should Fail' }),
-    'reporter insert public_figures'
+    'reporter insert public_figures',
   );
 
   await assertDenied(
     reporter.from('rooms').update({ title: 'nope' }).eq('slug', 'press-room'),
-    'reporter update rooms'
+    'reporter update rooms',
   );
 
   await assertAllowed(
     moderator.from('reporters').select('user_id, credential_status').limit(1),
-    'moderator select reporters'
+    'moderator select reporters',
   );
 
   const resourceId =
@@ -78,7 +79,7 @@ async function main() {
       action: 'test.audit.insert',
       entity_table: 'test_table',
       entity_id: resourceId,
-      metadata: { hello: 'world' }
+      metadata: { hello: 'world' },
     })
     .select('id')
     .single();
@@ -87,7 +88,10 @@ async function main() {
   if (!inserted?.id) throw new Error('Missing insert id');
 
   {
-    const { error } = await reporter.from('audit_events').update({ action: 'hacked' }).eq('id', inserted.id);
+    const { error } = await reporter
+      .from('audit_events')
+      .update({ action: 'hacked' })
+      .eq('id', inserted.id);
     if (!error) throw new Error('Expected reporter update to be denied');
     console.log('✅ denied as expected: reporter update audit_events');
   }
@@ -106,7 +110,7 @@ async function main() {
     .insert({
       id: resourceId,
       room_id: roomRow.id,
-      status: 'scheduled'
+      status: 'scheduled',
     })
     .select('id');
   assertNoError(sessionInsertErr, 'admin insert session for transcripts');
@@ -118,7 +122,7 @@ async function main() {
       { table: 'transcript_ai_outputs', column: 'session_id' },
       { table: 'transcript_span_labels', column: 'session_id' },
       { table: 'session_transcripts', column: 'session_id' },
-      { table: 'sessions', column: 'id' }
+      { table: 'sessions', column: 'id' },
     ]) {
       try {
         await admin.from(table).delete().eq(column, resourceId);
@@ -132,52 +136,55 @@ async function main() {
     await assertDenied(
       reporter.from('session_transcripts').insert({
         session_id: resourceId,
-        raw_text: 'unauthorized attempt'
+        raw_text: 'unauthorized attempt',
       }),
-      'reporter insert session_transcripts'
+      'reporter insert session_transcripts',
     );
 
     const { error: transcriptSeedErr } = await admin.from('session_transcripts').insert({
       session_id: resourceId,
       source: 'manual',
       raw_text: 'base transcript',
-      cleaned_text: 'base transcript cleaned'
+      cleaned_text: 'base transcript cleaned',
     });
     assertNoError(transcriptSeedErr, 'admin insert session_transcripts base');
 
     await assertDenied(
       reporter.from('session_transcripts').select('session_id').limit(1),
-      'reporter select session_transcripts'
+      'reporter select session_transcripts',
     );
 
     await assertDenied(
-      reporter.from('session_transcripts').update({ raw_text: 'tampered' }).eq('session_id', resourceId),
-      'reporter update session_transcripts'
+      reporter
+        .from('session_transcripts')
+        .update({ raw_text: 'tampered' })
+        .eq('session_id', resourceId),
+      'reporter update session_transcripts',
     );
 
     const { error: insightsSeedErr } = await admin.from('session_insights').insert({
       session_id: resourceId,
       transcript_word_count: 1,
       questions_total: 1,
-      rejection_rate: 0
+      rejection_rate: 0,
     });
     assertNoError(insightsSeedErr, 'admin insert session_insights base');
 
     await assertDenied(
       reporter.from('session_insights').select('session_id').limit(1),
-      'reporter select session_insights'
+      'reporter select session_insights',
     );
 
     await assertDenied(
       reporter.from('session_insights').insert({
-        session_id: resourceId
+        session_id: resourceId,
       }),
-      'reporter insert session_insights'
+      'reporter insert session_insights',
     );
 
     await assertDenied(
       reporter.from('session_insights').update({ questions_total: 2 }).eq('session_id', resourceId),
-      'reporter update session_insights'
+      'reporter update session_insights',
     );
 
     const { error: audioSeedErr } = await admin.from('session_audio_assets').insert({
@@ -185,13 +192,13 @@ async function main() {
       storage_path: `rooms/${roomRow.id}/sessions/${resourceId}/audio/seed.mp3`,
       mime_type: 'audio/mpeg',
       duration_ms: 120000,
-      transcript_id: resourceId
+      transcript_id: resourceId,
     });
     assertNoError(audioSeedErr, 'admin insert session_audio_assets base');
 
     await assertDenied(
       reporter.from('session_audio_assets').select('id').limit(1),
-      'reporter select session_audio_assets'
+      'reporter select session_audio_assets',
     );
 
     await assertDenied(
@@ -200,9 +207,9 @@ async function main() {
         storage_path: `rooms/${roomRow.id}/sessions/${resourceId}/audio/block.mp3`,
         mime_type: 'audio/mpeg',
         duration_ms: 4000,
-        transcript_id: resourceId
+        transcript_id: resourceId,
       }),
-      'reporter insert session_audio_assets'
+      'reporter insert session_audio_assets',
     );
 
     const { error: labelsSeedErr } = await admin.from('transcript_span_labels').insert({
@@ -211,13 +218,13 @@ async function main() {
       start_offset: 0,
       end_offset: 5,
       label_type: 'sensitivity',
-      label_value: 'redacted'
+      label_value: 'redacted',
     });
     assertNoError(labelsSeedErr, 'admin insert transcript_span_labels base');
 
     await assertDenied(
       reporter.from('transcript_span_labels').select('id').limit(1),
-      'reporter select transcript_span_labels'
+      'reporter select transcript_span_labels',
     );
 
     await assertDenied(
@@ -226,9 +233,9 @@ async function main() {
         transcript_id: resourceId,
         start_offset: 1,
         end_offset: 2,
-        label_type: 'testing'
+        label_type: 'testing',
       }),
-      'reporter insert transcript_span_labels'
+      'reporter insert transcript_span_labels',
     );
 
     const { error: aiSeedErr } = await admin.from('transcript_ai_outputs').insert({
@@ -237,13 +244,13 @@ async function main() {
       prompt_version: 'v1',
       provider: 'test-y',
       model_id: 'test-model',
-      output: { answer: 'test' }
+      output: { answer: 'test' },
     });
     assertNoError(aiSeedErr, 'admin insert transcript_ai_outputs base');
 
     await assertDenied(
       reporter.from('transcript_ai_outputs').select('id').limit(1),
-      'reporter select transcript_ai_outputs'
+      'reporter select transcript_ai_outputs',
     );
 
     await assertDenied(
@@ -253,9 +260,9 @@ async function main() {
         prompt_version: 'v1',
         provider: 'test-y',
         model_id: 'test-model',
-        output: { answer: 'halt' }
+        output: { answer: 'halt' },
       }),
-      'reporter insert transcript_ai_outputs'
+      'reporter insert transcript_ai_outputs',
     );
   } finally {
     await cleanup();

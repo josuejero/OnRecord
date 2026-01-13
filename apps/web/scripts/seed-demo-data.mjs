@@ -60,7 +60,7 @@ async function main() {
     .from('rooms')
     .upsert(
       { public_figure_id: pf.id, slug: 'press-room', title: 'Press Room' },
-      { onConflict: 'public_figure_id,slug' }
+      { onConflict: 'public_figure_id,slug' },
     )
     .select('id')
     .single();
@@ -73,7 +73,7 @@ async function main() {
     'Caregiver: We gave ibuprofen earlier and she acknowledged the relief.',
     'Caregiver: The patient rated lumbar soreness at 3/10 when we asked if the new cushion helped while seated.',
     'Caregiver: Wound dressing looks dry; the wound specialist appointment is Thursday at 10, and we are booking the accessible shuttle.',
-    'Caregiver: Mood stayed calm after our breathing exercise; the handoff notes will mention the safe transfer plan.'
+    'Caregiver: Mood stayed calm after our breathing exercise; the handoff notes will mention the safe transfer plan.',
   ].join(' ');
 
   const processedAt = new Date().toISOString();
@@ -83,12 +83,14 @@ async function main() {
     raw_text: transcriptText,
     cleaned_text: transcriptText,
     meta: { demo: true, persona: 'caregiver', tone: 'calm' },
-    processed_at: processedAt
+    processed_at: processedAt,
   };
 
-  const { error: transcriptErr } = await supabase.from('session_transcripts').upsert(transcriptPayload, {
-    onConflict: 'session_id'
-  });
+  const { error: transcriptErr } = await supabase
+    .from('session_transcripts')
+    .upsert(transcriptPayload, {
+      onConflict: 'session_id',
+    });
   if (transcriptErr) throw transcriptErr;
 
   const labelDefinitions = [
@@ -96,32 +98,32 @@ async function main() {
       id: '00000000-0000-0000-0000-0000000000a1',
       type: 'medication',
       snippet: 'We gave ibuprofen earlier and she acknowledged the relief.',
-      value: 'ibuprofen dose acknowledged'
+      value: 'ibuprofen dose acknowledged',
     },
     {
       id: '00000000-0000-0000-0000-0000000000a2',
       type: 'symptom',
       snippet: 'lumbar soreness at 3/10 when we asked if the new cushion helped while seated.',
-      value: 'lumbar soreness'
+      value: 'lumbar soreness',
     },
     {
       id: '00000000-0000-0000-0000-0000000000a3',
       type: 'appointment',
       snippet: 'appointment is Thursday at 10, and we are booking the accessible shuttle.',
-      value: 'wound specialist appointment'
+      value: 'wound specialist appointment',
     },
     {
       id: '00000000-0000-0000-0000-0000000000a4',
       type: 'caregiver_task',
       snippet: 'booking the accessible shuttle.',
-      value: 'transport coordination'
+      value: 'transport coordination',
     },
     {
       id: '00000000-0000-0000-0000-0000000000a5',
       type: 'mood_sentiment',
       snippet: 'Mood stayed calm after our breathing exercise;',
-      value: 'calm and cooperative'
-    }
+      value: 'calm and cooperative',
+    },
   ].map((def) => {
     const [start, end] = locateOffset(transcriptText, def.snippet, def.type);
     return {
@@ -132,7 +134,7 @@ async function main() {
       end_offset: end,
       label_type: def.type,
       label_value: def.value,
-      created_by: null
+      created_by: null,
     };
   });
 
@@ -147,10 +149,10 @@ async function main() {
   };
 
   const lumbarSpan = createSpan(
-    'lumbar soreness at 3/10 when we asked if the new cushion helped while seated.'
+    'lumbar soreness at 3/10 when we asked if the new cushion helped while seated.',
   );
   const appointmentSpan = createSpan(
-    'appointment is Thursday at 10, and we are booking the accessible shuttle.'
+    'appointment is Thursday at 10, and we are booking the accessible shuttle.',
   );
   const shuttleSpan = createSpan('booking the accessible shuttle.');
 
@@ -162,45 +164,49 @@ async function main() {
       label: {
         ...lumbarSpan,
         label_type: 'symptom',
-        label_value: 'lumbar soreness'
-      }
+        label_value: 'lumbar soreness',
+      },
     },
     {
       title: 'Coordinating visits',
-      detail: 'Thursday at 10 is confirmed for the wound specialist, and the accessible shuttle is being booked.',
+      detail:
+        'Thursday at 10 is confirmed for the wound specialist, and the accessible shuttle is being booked.',
       evidence_span: appointmentSpan,
       label: {
         ...shuttleSpan,
         label_type: 'caregiver_task',
-        label_value: 'transport coordination'
-      }
-    }
+        label_value: 'transport coordination',
+      },
+    },
   ];
 
   const followUpQuestions = [
     'Confirm the transportation provider and send the final itinerary to the care team.',
-    'Verify that the wound check notes are uploaded to the shared record.'
+    'Verify that the wound check notes are uploaded to the shared record.',
   ];
 
   const recap = {
-    summary: 'Caregiver notes highlight steady comfort management and the upcoming wound specialist visit.',
+    summary:
+      'Caregiver notes highlight steady comfort management and the upcoming wound specialist visit.',
     key_concerns: keyConcerns,
     follow_up_questions: followUpQuestions,
-    safety_notes: 'Draft recap only. Confirm the transcript before sharing and treat it as informational (not medical advice).',
-    verification_notes: 'Verify statements and concerns with the official transcript prior to publishing.',
+    safety_notes:
+      'Draft recap only. Confirm the transcript before sharing and treat it as informational (not medical advice).',
+    verification_notes:
+      'Verify statements and concerns with the official transcript prior to publishing.',
     model_info: {
       provider: 'mock',
       model_id: 'mock-recap-v1',
       prompt_version: 'demo-v1',
       executed_at: processedAt,
-      hardware: 'seed-script'
+      hardware: 'seed-script',
     },
     labels: labelDefinitions.map((label) => ({
       start_offset: label.start_offset,
       end_offset: label.end_offset,
       label_type: label.label_type,
-      label_value: label.label_value
-    }))
+      label_value: label.label_value,
+    })),
   };
 
   const { error: recapErr } = await supabase.from('transcript_ai_outputs').upsert(
@@ -212,9 +218,9 @@ async function main() {
       model_id: 'mock-recap-v1',
       output: recap,
       include_in_export: true,
-      created_by: null
+      created_by: null,
     },
-    { onConflict: 'session_id,transcript_id,prompt_version,model_id' }
+    { onConflict: 'session_id,transcript_id,prompt_version,model_id' },
   );
   if (recapErr) throw recapErr;
 
@@ -222,7 +228,7 @@ async function main() {
     public_figure: pf.id,
     room: room.id,
     session: session.id,
-    labels: labelDefinitions.map((label) => label.id)
+    labels: labelDefinitions.map((label) => label.id),
   });
 }
 

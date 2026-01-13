@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './test.setup';
 import AxeBuilder from '@axe-core/playwright';
 
 test('public pages have no serious/critical a11y violations', async ({ page }) => {
@@ -10,7 +10,7 @@ test('public pages have no serious/critical a11y violations', async ({ page }) =
     .analyze();
 
   const seriousOrCritical = results.violations.filter(
-    (violation) => violation.impact === 'serious' || violation.impact === 'critical'
+    (violation) => violation.impact === 'serious' || violation.impact === 'critical',
   );
 
   expect(seriousOrCritical, JSON.stringify(seriousOrCritical, null, 2)).toEqual([]);

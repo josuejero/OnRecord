@@ -1,6 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
-
-const roomPath = '/rooms/demo-figure/demo-room';
+import { test, expect, type Page } from './test.setup';
+import { roomPath } from './helpers/rooms';
 
 async function login(page: Page, email: string, password = 'password123!') {
   await page.goto('/login');
@@ -22,7 +21,7 @@ test('moderator can start a session and reporter can observe after reload', asyn
   await modPage.getByTestId('session-start').click();
 
   await expect(modPage.getByTestId('session-summary-title')).toBeVisible();
-  await expect(modPage.locator('text=live')).toBeVisible();
+  await expect(modPage.getByTestId('session-status-badge')).toHaveText(/live/i);
 
   const repCtx = await browser.newContext();
   const repPage = await repCtx.newPage();
@@ -31,5 +30,5 @@ test('moderator can start a session and reporter can observe after reload', asyn
   await repPage.goto(roomPath);
   await expect(repPage.getByTestId('room-title')).toHaveText('Press Room: Demo');
   await repPage.reload();
-  await expect(repPage.locator('text=live')).toBeVisible();
+  await expect(repPage.getByTestId('session-status-badge')).toHaveText(/live/i);
 });

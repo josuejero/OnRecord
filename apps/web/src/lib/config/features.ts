@@ -15,7 +15,7 @@ const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
   aiRecapEnabled: true,
   aiRecapProvider: 'mock',
   labelerEnabled: true,
-  evalsPageEnabled: true
+  evalsPageEnabled: true,
 };
 
 const AVAILABLE_AI_RECAP_PROVIDERS: AiRecapProvider[] = AiRecapProviderSchema.options;
@@ -63,25 +63,25 @@ export function getFeatureFlags(): FeatureFlags {
   cachedFeatureFlags = {
     voiceInputEnabled: parseBooleanFlag(
       process.env.NEXT_PUBLIC_VOICE_INPUT_ENABLED,
-      DEFAULT_FEATURE_FLAGS.voiceInputEnabled
+      DEFAULT_FEATURE_FLAGS.voiceInputEnabled,
     ),
     voiceUploadEnabled: parseBooleanFlag(
       process.env.NEXT_PUBLIC_VOICE_UPLOAD_ENABLED,
-      DEFAULT_FEATURE_FLAGS.voiceUploadEnabled
+      DEFAULT_FEATURE_FLAGS.voiceUploadEnabled,
     ),
     aiRecapEnabled: parseBooleanFlag(
       process.env.NEXT_PUBLIC_AI_RECAP_ENABLED,
-      DEFAULT_FEATURE_FLAGS.aiRecapEnabled
+      DEFAULT_FEATURE_FLAGS.aiRecapEnabled,
     ),
     aiRecapProvider: parseAiRecapProvider(process.env.NEXT_PUBLIC_AI_RECAP_PROVIDER),
     labelerEnabled: parseBooleanFlag(
       process.env.NEXT_PUBLIC_LABELER_ENABLED,
-      DEFAULT_FEATURE_FLAGS.labelerEnabled
+      DEFAULT_FEATURE_FLAGS.labelerEnabled,
     ),
     evalsPageEnabled: parseBooleanFlag(
       process.env.NEXT_PUBLIC_EVALS_PAGE_ENABLED,
-      DEFAULT_FEATURE_FLAGS.evalsPageEnabled
-    )
+      DEFAULT_FEATURE_FLAGS.evalsPageEnabled,
+    ),
   };
 
   return cachedFeatureFlags;

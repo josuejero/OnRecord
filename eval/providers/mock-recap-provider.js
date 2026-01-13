@@ -33,7 +33,7 @@ function buildEvidenceSpan(transcript, start, length) {
   if (tail <= head) return undefined;
   return {
     start_offset: head,
-    end_offset: tail
+    end_offset: tail,
   };
 }
 
@@ -45,7 +45,7 @@ function buildConcerns(transcript) {
     concerns.push({
       title: i === 0 ? 'Key takeaway' : 'Conversation detail',
       detail: sentence,
-      evidence_span: buildEvidenceSpan(transcript, i * 30, 40)
+      evidence_span: buildEvidenceSpan(transcript, i * 30, 40),
     });
   }
   return concerns;
@@ -76,12 +76,14 @@ module.exports = class MockRecapProvider {
       summary: buildSummary(transcript),
       key_concerns: buildConcerns(transcript),
       follow_up_questions: buildFollowUps(transcript),
-      safety_notes: 'Draft recap only; verify every fact before publishing and do not treat this as medical or legal guidance.',
-      verification_notes: 'Confirm statements with the official transcript and supporting documents.'
+      safety_notes:
+        'Draft recap only; verify every fact before publishing and do not treat this as medical or legal guidance.',
+      verification_notes:
+        'Confirm statements with the official transcript and supporting documents.',
     };
 
     return {
-      output: JSON.stringify(recap)
+      output: JSON.stringify(recap),
     };
   }
 };

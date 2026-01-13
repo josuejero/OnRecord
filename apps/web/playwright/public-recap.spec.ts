@@ -1,6 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
-
-const roomPath = '/rooms/demo-figure/demo-room';
+import { test, expect, type Page } from './test.setup';
+import { roomPath, buildRecapSlug } from './helpers/rooms';
 
 async function login(page: Page, email: string, password = 'password123!') {
   await page.goto('/login');
@@ -14,11 +13,9 @@ test('public recap is 404 until published, then becomes public', async ({ page }
   await login(page, 'moderator@onrecord.local');
   await page.goto(roomPath);
 
-  const sessionId = await page.getByTestId('session-id').textContent();
+  const sessionId = (await page.getByTestId('session-id').textContent()) ?? '';
   expect(sessionId).toBeTruthy();
-
-  const short = (sessionId ?? '').trim().slice(0, 8);
-  const recapSlug = `demo-figure-demo-room-${short}`;
+  const recapSlug = buildRecapSlug(sessionId);
 
   await page.context().clearCookies();
   const res1 = await page.goto(`/recaps/${recapSlug}`);
@@ -26,7 +23,7 @@ test('public recap is 404 until published, then becomes public', async ({ page }
 
   await login(page, 'moderator@onrecord.local');
   await page.goto(roomPath);
-  await page.getByRole('button', { name: /publish recap/i }).click();
+  await page.getByRole('button', { name: 'Publish recap' }).first().click();
 
   await page.context().clearCookies();
   const res2 = await page.goto(`/recaps/${recapSlug}`);
@@ -36,7 +33,7 @@ test('public recap is 404 until published, then becomes public', async ({ page }
 
   await login(page, 'moderator@onrecord.local');
   await page.goto(roomPath);
-  await page.getByRole('button', { name: /unpublish recap/i }).click();
+  await page.getByRole('button', { name: 'Unpublish recap' }).click();
 
   await page.context().clearCookies();
   const res3 = await page.goto(`/recaps/${recapSlug}`);

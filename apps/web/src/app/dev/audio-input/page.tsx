@@ -27,7 +27,11 @@ export default function DevAudioInputPage() {
         voiceUploadEnabled
       />
 
-      <form action={processTranscript} className="flex items-center gap-3" data-testid="process-transcript-form">
+      <form
+        action={processTranscript}
+        className="flex items-center gap-3"
+        data-testid="process-transcript-form"
+      >
         <input type="hidden" name="session_id" value={DEV_SESSION_ID} />
         <input type="hidden" name="revalidate" value="/" />
         <Button data-testid="process-transcript-button" type="submit" variant="secondary">

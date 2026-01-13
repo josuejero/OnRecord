@@ -37,10 +37,10 @@ export default async function WhoAmIPage() {
                 id: user.id,
                 email: user.email,
                 app_metadata: user.app_metadata,
-                user_metadata: user.user_metadata
+                user_metadata: user.user_metadata,
               },
               null,
-              2
+              2,
             )}
           </pre>
         </div>
@@ -62,8 +62,8 @@ export default async function WhoAmIPage() {
 
         <div className="text-xs text-slate-500">
           <p>
-            Reminder: the UI may suggest a dashboard, but the database still enforces access. If your role changes,
-            refresh and re-check here.
+            Reminder: the UI may suggest a dashboard, but the database still enforces access. If
+            your role changes, refresh and re-check here.
           </p>
         </div>
 

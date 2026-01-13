@@ -1,6 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
-
-const roomPath = '/rooms/demo-figure/demo-room';
+import { test, expect, type Page } from './test.setup';
+import { ensureSessionLive, roomPath } from './helpers/rooms';
 
 async function login(page: Page, email: string, password = 'password123!') {
   await page.goto('/login');
@@ -16,15 +15,11 @@ test('reporter submission appears in moderator queue without refresh', async ({ 
   await login(modPage, 'moderator@onrecord.local');
 
   await modPage.goto(roomPath);
-  await expect(modPage.getByTestId('room-title')).toHaveText('Press Room: Demo');
+  await ensureSessionLive(modPage);
 
-  const startBtn = modPage.getByTestId('session-start');
-  if (await startBtn.isVisible()) {
-    await startBtn.click();
-    await expect(modPage.locator('text=live')).toBeVisible();
-  }
-
-  await expect(modPage.getByTestId('queue-list').or(modPage.getByTestId('queue-empty'))).toBeVisible();
+  await expect(
+    modPage.getByTestId('queue-list').or(modPage.getByTestId('queue-empty')),
+  ).toBeVisible();
 
   const repCtx = await browser.newContext();
   const repPage = await repCtx.newPage();

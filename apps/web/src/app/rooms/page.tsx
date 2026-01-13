@@ -46,8 +46,8 @@ export default async function RoomsPage() {
       {reporterPending ? (
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
           Your reporter credential is{' '}
-          <span className="font-semibold">{reporter?.credential_status ?? 'pending'}</span>. Until it is approved,
-          room access is denied by the database.
+          <span className="font-semibold">{reporter?.credential_status ?? 'pending'}</span>. Until
+          it is approved, room access is denied by the database.
         </div>
       ) : null}
 
@@ -67,7 +67,9 @@ export default async function RoomsPage() {
               </CardHeader>
               <CardContent className="space-y-2 text-sm text-slate-600">
                 <div className="text-slate-500">Public figure</div>
-                <div className="font-semibold text-slate-900">{room.public_figures?.name ?? 'Unknown'}</div>
+                <div className="font-semibold text-slate-900">
+                  {room.public_figures?.name ?? 'Unknown'}
+                </div>
 
                 <Link
                   className="inline-flex items-center text-slate-900 underline"

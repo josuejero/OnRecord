@@ -12,7 +12,7 @@ import { LABEL_TYPES, type LabelRow, type LabelType } from './types';
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium',
-  timeStyle: 'short'
+  timeStyle: 'short',
 });
 
 function downloadBlob(filename: string, blob: Blob) {
@@ -24,6 +24,13 @@ function downloadBlob(filename: string, blob: Blob) {
   anchor.click();
   anchor.remove();
   URL.revokeObjectURL(url);
+}
+
+function resolveErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+  return fallback;
 }
 
 type LabelerClientProps = {
@@ -43,7 +50,7 @@ export function LabelerClient({
   transcriptText,
   labels,
   recapSlug,
-  revalidatePath
+  revalidatePath,
 }: LabelerClientProps) {
   const textRef = useRef<HTMLTextAreaElement | null>(null);
   const [selection, setSelection] = useState({ start: 0, end: 0 });
@@ -65,9 +72,9 @@ export function LabelerClient({
       Object.fromEntries(
         labels.map((label) => [
           label.id,
-          { type: label.label_type, value: label.label_value ?? '' }
-        ])
-      )
+          { type: label.label_type, value: label.label_value ?? '' },
+        ]),
+      ),
     );
   }, [labels]);
 
@@ -76,17 +83,33 @@ export function LabelerClient({
     if (!el) return;
     setSelection({
       start: el.selectionStart,
-      end: el.selectionEnd
+      end: el.selectionEnd,
     });
   };
+
+  useEffect(() => {
+    const handleSelectionChange = () => {
+      const el = textRef.current;
+      if (!el) return;
+      const start = el.selectionStart ?? 0;
+      const end = el.selectionEnd ?? 0;
+      setSelection((prev) =>
+        prev.start === start && prev.end === end ? prev : { start, end },
+      );
+    };
+
+    document.addEventListener('selectionchange', handleSelectionChange);
+    return () => {
+      document.removeEventListener('selectionchange', handleSelectionChange);
+    };
+  }, []);
 
   const selectionLength = Math.max(0, selection.end - selection.start);
   const selectionSnippet = transcriptText.slice(selection.start, selection.end);
   const selectionOverlaps = useMemo(() => {
     if (selectionLength === 0) return false;
     return labels.some(
-      (label) =>
-        label.start_offset < selection.end && label.end_offset > selection.start
+      (label) => label.start_offset < selection.end && label.end_offset > selection.start,
     );
   }, [labels, selection, selectionLength]);
 
@@ -107,12 +130,8 @@ export function LabelerClient({
     startTransition(() => {
       setPendingAction(actionKey);
       action()
-        .catch((error) => {
-          setErrorMessage(
-            typeof error?.message === 'string'
-              ? error.message
-              : 'Something went wrong.'
-          );
+        .catch((error: unknown) => {
+          setErrorMessage(resolveErrorMessage(error, 'Something went wrong.'));
         })
         .finally(() => {
           setPendingAction(null);
@@ -134,7 +153,7 @@ export function LabelerClient({
     startAction('create', () =>
       createLabel(formData).then(() => {
         setLabelValue('');
-      })
+      }),
     );
   };
 
@@ -170,13 +189,13 @@ export function LabelerClient({
         headers: {
           'Content-Type': 'application/json',
           apikey: env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
+          Authorization: `Bearer ${env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
           slug: recapSlug,
           format: 'jsonl',
-          include: ['labels']
-        })
+          include: ['labels'],
+        }),
       });
 
       if (!res.ok) {
@@ -185,12 +204,8 @@ export function LabelerClient({
 
       const blob = await res.blob();
       downloadBlob(`onrecord-labels-${recapSlug}.jsonl`, blob);
-    } catch (error) {
-      setErrorMessage(
-        typeof error?.message === 'string'
-          ? error.message
-          : 'Unable to export labels.'
-      );
+    } catch (error: unknown) {
+      setErrorMessage(resolveErrorMessage(error, 'Unable to export labels.'));
     } finally {
       setExporting(false);
     }
@@ -256,7 +271,10 @@ export function LabelerClient({
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1 text-xs text-muted-foreground">
-              <label className="text-xs uppercase tracking-wide text-slate-500" htmlFor="label-type-field">
+              <label
+                className="text-xs uppercase tracking-wide text-slate-500"
+                htmlFor="label-type-field"
+              >
                 Label type
               </label>
               <select
@@ -267,14 +285,17 @@ export function LabelerClient({
               >
                 {LABEL_TYPES.map((type) => (
                   <option key={type} value={type}>
-                {type.replace(/_/g, ' ')}
+                    {type.replace(/_/g, ' ')}
                   </option>
                 ))}
               </select>
             </div>
 
             <div className="space-y-1 text-xs text-muted-foreground">
-              <label className="text-xs uppercase tracking-wide text-slate-500" htmlFor="label-value-field">
+              <label
+                className="text-xs uppercase tracking-wide text-slate-500"
+                htmlFor="label-value-field"
+              >
                 Label value (optional)
               </label>
               <Input
@@ -309,9 +330,7 @@ export function LabelerClient({
               {exporting ? 'Exporting…' : 'Export labels'}
             </Button>
             {!recapSlug ? (
-              <span className="text-xs">
-                Publish a recap to enable exports.
-              </span>
+              <span className="text-xs">Publish a recap to enable exports.</span>
             ) : null}
           </div>
         </CardContent>
@@ -347,9 +366,10 @@ export function LabelerClient({
             filteredLabels.map((label) => {
               const edit = edits[label.id] ?? {
                 type: label.label_type,
-                value: label.label_value ?? ''
+                value: label.label_value ?? '',
               };
-              const isBusy = pendingAction === `update:${label.id}` || pendingAction === `delete:${label.id}`;
+              const isBusy =
+                pendingAction === `update:${label.id}` || pendingAction === `delete:${label.id}`;
               return (
                 <div
                   key={label.id}
@@ -374,7 +394,7 @@ export function LabelerClient({
                       onChange={(event) =>
                         setEdits((prev) => ({
                           ...prev,
-                          [label.id]: { ...edit, type: event.target.value as LabelType }
+                          [label.id]: { ...edit, type: event.target.value as LabelType },
                         }))
                       }
                       className="rounded border border-slate-200 bg-white px-2 py-1 text-xs shadow-sm"
@@ -391,7 +411,7 @@ export function LabelerClient({
                       onChange={(event) =>
                         setEdits((prev) => ({
                           ...prev,
-                          [label.id]: { ...edit, value: event.target.value }
+                          [label.id]: { ...edit, value: event.target.value },
                         }))
                       }
                       placeholder="Label value"

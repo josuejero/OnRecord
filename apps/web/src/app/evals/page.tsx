@@ -3,7 +3,7 @@ import path from 'node:path';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Evaluations'
+  title: 'Evaluations',
 };
 
 type LatestEval = {
@@ -48,7 +48,7 @@ export default async function Page() {
     ? 'Unknown'
     : new Date(latest.timestamp).toLocaleString(undefined, {
         dateStyle: 'medium',
-        timeStyle: 'short'
+        timeStyle: 'short',
       });
 
   return (
@@ -71,7 +71,11 @@ export default async function Page() {
           <p className="text-xs uppercase tracking-wide text-muted-foreground">Prompt versions</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {latest.prompt_versions.map((version) => (
-              <span key={version} className="rounded-full border px-3 py-1 text-xs font-semibold text-foreground" role="status">
+              <span
+                key={version}
+                className="rounded-full border px-3 py-1 text-xs font-semibold text-foreground"
+                role="status"
+              >
                 {version}
               </span>
             ))}

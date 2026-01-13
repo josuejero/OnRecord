@@ -24,7 +24,7 @@ const statusLabelMap: Record<'idle' | 'recording' | 'processing' | 'ready', stri
   idle: 'Idle',
   recording: 'Recording…',
   processing: 'Processing…',
-  ready: 'Ready'
+  ready: 'Ready',
 };
 
 async function measureAudioDuration(file: File) {
@@ -33,7 +33,12 @@ async function measureAudioDuration(file: File) {
   }
 
   const AudioCtx =
-    (window as Window & { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext }).AudioContext ??
+    (
+      window as Window & {
+        AudioContext?: typeof AudioContext;
+        webkitAudioContext?: typeof AudioContext;
+      }
+    ).AudioContext ??
     (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
 
   if (!AudioCtx) {
@@ -60,7 +65,7 @@ export default function AudioInput({
   voiceInputEnabled,
   voiceUploadEnabled,
   saveAction,
-  uploadAction
+  uploadAction,
 }: AudioInputProps) {
   const [text, setText] = useState(initialText);
   const [pendingInterim, setPendingInterim] = useState('');
@@ -82,9 +87,10 @@ export default function AudioInput({
     setVoiceUsed(true);
   }, []);
 
-  const { status, interimTranscript, error, isSupported, provider, start, stop } = useSpeechRecognition({
-    onFinalResult: handleFinalTranscript
-  });
+  const { status, interimTranscript, error, isSupported, provider, start, stop } =
+    useSpeechRecognition({
+      onFinalResult: handleFinalTranscript,
+    });
 
   useEffect(() => {
     setPendingInterim(interimTranscript);
@@ -110,7 +116,7 @@ export default function AudioInput({
     ? JSON.stringify({
         source: 'voice',
         provider: provider ?? 'web-speech',
-        browser: typeof navigator === 'undefined' ? 'unknown' : navigator.userAgent
+        browser: typeof navigator === 'undefined' ? 'unknown' : navigator.userAgent,
       })
     : '{}';
 
@@ -121,7 +127,7 @@ export default function AudioInput({
       `provider: ${provider ?? 'n/a'}`,
       `speech api supported: ${isSupported}`,
       `voice input feature: ${voiceInputEnabled}`,
-      `voice upload feature: ${voiceUploadEnabled}`
+      `voice upload feature: ${voiceUploadEnabled}`,
     ].join('\n');
   }, [provider, isSupported, voiceInputEnabled, voiceUploadEnabled]);
 
@@ -175,7 +181,13 @@ export default function AudioInput({
   };
 
   const recordLabel =
-    status === 'recording' ? 'Stop recording' : status === 'processing' ? 'Processing…' : status === 'ready' ? 'Record again' : 'Record audio';
+    status === 'recording'
+      ? 'Stop recording'
+      : status === 'processing'
+        ? 'Processing…'
+        : status === 'ready'
+          ? 'Record again'
+          : 'Record audio';
 
   return (
     <div className="space-y-4">
@@ -244,7 +256,9 @@ export default function AudioInput({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="font-semibold text-slate-900">Upload audio file</p>
-              <p className="text-xs text-slate-500">Saved files land in the private audio bucket.</p>
+              <p className="text-xs text-slate-500">
+                Saved files land in the private audio bucket.
+              </p>
             </div>
             <input
               type="file"

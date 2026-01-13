@@ -14,23 +14,23 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 const users = [
   {
     email: 'reporter@onrecord.local',
-    password: 'password123!'
+    password: 'password123!',
   },
   {
     email: 'moderator@onrecord.local',
-    password: 'password123!'
+    password: 'password123!',
   },
   {
     email: 'staff@onrecord.local',
-    password: 'password123!'
-  }
+    password: 'password123!',
+  },
 ];
 
 async function createUser({ email, password }) {
   const { data, error } = await supabase.auth.admin.createUser({
     email,
     password,
-    email_confirm: true
+    email_confirm: true,
   });
 
   if (error) throw error;
@@ -45,7 +45,10 @@ async function main() {
   await supabase.from('profiles').update({ role: 'moderator' }).eq('user_id', moderator.id);
   await supabase.from('profiles').update({ role: 'staff' }).eq('user_id', staff.id);
 
-  await supabase.from('reporters').update({ credential_status: 'approved' }).eq('user_id', reporter.id);
+  await supabase
+    .from('reporters')
+    .update({ credential_status: 'approved' })
+    .eq('user_id', reporter.id);
 
   console.log('Seeded users:');
   console.log({ reporter: reporter.email, moderator: moderator.email, staff: staff.email });
