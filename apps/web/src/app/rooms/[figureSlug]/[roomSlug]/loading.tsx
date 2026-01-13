@@ -5,7 +5,7 @@ const panels = ['Queue', 'Transcript', 'Recap'] as const;
 
 export default function RoomDetailLoading() {
   return (
-    <div className="space-y-6">
+    <div data-testid="room-detail-loading" className="space-y-6">
       <Card>
         <CardHeader className="space-y-2">
           <Skeleton className="h-6 w-48" />

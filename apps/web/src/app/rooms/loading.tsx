@@ -5,7 +5,7 @@ const roomSkeletons = Array.from({ length: 6 }, (_, index) => index);
 
 export default function RoomsLoading() {
   return (
-    <div className="space-y-6 animate-pulse">
+    <div data-testid="rooms-loading" className="space-y-6 animate-pulse">
       <Card className="border border-slate-200 shadow-sm">
         <CardHeader className="space-y-2">
           <Skeleton className="h-6 w-40" />
