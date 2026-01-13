@@ -7,6 +7,7 @@ import { LoadingButton } from '@/components/loading-button';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 
 type Role = 'reporter' | 'moderator' | 'staff' | 'admin_service';
 
@@ -341,13 +342,26 @@ export function QuestionQueueClient({
 
   async function setStatus(questionId: string, status: 'approved' | 'rejected' | 'needs_edit') {
     setError(null);
-    const { error } = await supabase.rpc('set_question_status', {
-      p_question_id: questionId,
-      p_status: status,
-      p_note: null,
-    });
-    if (error) setError(prettyError(error.message));
+  const { error } = await supabase.rpc('set_question_status', {
+    p_question_id: questionId,
+    p_status: status,
+    p_note: null,
+  });
+  if (error) {
+    const message = prettyError(error.message);
+    setError(message);
+    toast.error(message);
+    return;
   }
+
+  const label =
+    status === 'approved'
+      ? 'Question approved'
+      : status === 'rejected'
+      ? 'Question rejected'
+      : 'Question sent back for edits';
+  toast.success(label);
+}
 
   async function moveInQueue(questionId: string, direction: 'up' | 'down') {
     setError(null);

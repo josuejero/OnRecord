@@ -2,6 +2,7 @@
 
 import crypto from 'node:crypto';
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { pipeline } from '@xenova/transformers';
 import type { SummarizationPipeline } from '@xenova/transformers';
 import { requireRole } from '@/lib/auth/require';
@@ -9,6 +10,23 @@ import { getEnv } from '@/lib/env';
 import { getFeatureFlags } from '@/lib/config/features';
 import { supabaseServer } from '@/lib/supabase/server';
 import { AiRecapProvider, AiRecapProviderSchema, Recap, RecapSchema } from '@onrecord/shared';
+import { toastKeys } from '@/lib/toast-keys';
+
+function buildRedirectUrl(path: string, toastValue: string, extras: Record<string, string | null> = {}) {
+  const [base, query] = path.split('?');
+  const params = new URLSearchParams(query ?? '');
+  params.set('toast', toastValue);
+  for (const [key, value] of Object.entries(extras)) {
+    if (value) {
+      params.set(key, value);
+    }
+  }
+  return `${base}?${params.toString()}`;
+}
+
+function redirectWithToast(path: string, toastValue: string, extras: Record<string, string | null> = {}) {
+  redirect(buildRedirectUrl(path, toastValue, extras));
+}
 
 function requireString(fd: FormData, key: string) {
   const v = fd.get(key);
@@ -96,6 +114,7 @@ export async function startSession(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath(revalidate);
+  redirectWithToast(revalidate, toastKeys.SESSION_STARTED);
 }
 
 export async function endSession(formData: FormData) {
@@ -107,6 +126,7 @@ export async function endSession(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath(revalidate);
+  redirectWithToast(revalidate, toastKeys.SESSION_ENDED);
 }
 
 export async function publishRecap(formData: FormData) {
@@ -134,6 +154,7 @@ export async function publishRecap(formData: FormData) {
 
   revalidatePath(revalidate);
   revalidatePath(`/recaps/${slug}`);
+  redirectWithToast(revalidate, toastKeys.RECAP_PUBLISHED, { slug });
 }
 
 export async function unpublishRecap(formData: FormData) {

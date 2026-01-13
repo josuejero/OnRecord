@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ClientErrorBoundary } from '@/components/client-error-boundary';
 import { ErrorState } from '@/components/error-state';
+import { EmptyState } from '@/components/empty-state';
 import { supabaseServer } from '@/lib/supabase/server';
 import { requireRole } from '@/lib/auth/require';
 import {
@@ -18,6 +19,7 @@ import { RecapPanel } from './RecapPanel';
 import { TranscriptPanel } from './TranscriptPanel';
 import { getFeatureFlags } from '@/lib/config/features';
 import { Recap, RecapSchema } from '@onrecord/shared';
+import { CalendarClock } from 'lucide-react';
 
 type SessionRow = {
   id: string;
@@ -264,7 +266,27 @@ export default async function RoomDetailPage({
               {/* Optional: surface constraint errors in Phase 2 by adding error boundaries or redirect with toast */}
             </>
           ) : (
-            <div className="text-slate-500">No sessions found for this room.</div>
+            <EmptyState
+              icon={<CalendarClock className="h-6 w-6 text-slate-400" aria-hidden />}
+              title="No sessions scheduled yet"
+              description="This room hasn’t recorded any sessions, so the queue, transcript, and recap panels stay empty. Schedule a session to unlock them."
+              action={
+                canCreate ? (
+                  <form action={createScheduledSession} className="w-full">
+                    <input type="hidden" name="room_id" value={room.id} />
+                    <input type="hidden" name="revalidate" value={revalidate} />
+                    <Button className="w-full" type="submit">
+                      Create scheduled session
+                    </Button>
+                  </form>
+                ) : (
+                  <p className="text-xs text-slate-500">
+                    Moderators and staff can schedule sessions for this room.
+                  </p>
+                )
+              }
+              className="rounded-none border-none bg-transparent p-0 shadow-none text-left"
+            />
           )}
         </CardContent>
       </Card>

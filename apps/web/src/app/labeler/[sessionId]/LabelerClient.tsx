@@ -6,9 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { EmptyState } from '@/components/empty-state';
 import { getEnv } from '@/lib/env';
+import { toast } from 'sonner';
 import { createLabel, deleteLabel, updateLabel } from './actions';
 import { LABEL_TYPES, type LabelRow, type LabelType } from './types';
+import { Tag } from 'lucide-react';
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium',
@@ -116,6 +119,10 @@ export function LabelerClient({
     return labels.filter((label) => label.label_type === filter);
   }, [filter, labels]);
 
+  const focusTranscript = () => {
+    textRef.current?.focus();
+  };
+
   const canCreate =
     !!transcriptId &&
     transcriptText.length > 0 &&
@@ -151,6 +158,7 @@ export function LabelerClient({
     startAction('create', () =>
       createLabel(formData).then(() => {
         setLabelValue('');
+        toast.success('Label saved');
       }),
     );
   };
@@ -164,7 +172,11 @@ export function LabelerClient({
     formData.set('label_value', value);
     formData.set('revalidate', revalidatePath);
 
-    startAction(`update:${labelId}`, () => updateLabel(formData));
+    startAction(`update:${labelId}`, () =>
+      updateLabel(formData).then(() => {
+        toast.success('Label saved');
+      }),
+    );
   };
 
   const handleDelete = (labelId: string) => {
@@ -173,7 +185,11 @@ export function LabelerClient({
     formData.set('label_id', labelId);
     formData.set('revalidate', revalidatePath);
 
-    startAction(`delete:${labelId}`, () => deleteLabel(formData));
+    startAction(`delete:${labelId}`, () =>
+      deleteLabel(formData).then(() => {
+        toast.success('Label deleted');
+      }),
+    );
   };
 
   const handleExport = async () => {
@@ -357,9 +373,17 @@ export function LabelerClient({
         </CardHeader>
         <CardContent className="space-y-3">
           {filteredLabels.length === 0 ? (
-            <div className="rounded border border-dashed border-slate-200 px-3 py-4 text-sm text-slate-500">
-              No labels yet.
-            </div>
+            <EmptyState
+              icon={<Tag className="h-6 w-6 text-slate-400" aria-hidden />}
+              title="No labels yet"
+              description="Highlight a part of the transcript, choose a label type, and press Add label to get started."
+              action={
+                <Button size="sm" variant="ghost" onClick={focusTranscript}>
+                  Focus transcript
+                </Button>
+              }
+              className="m-0 border-none bg-transparent p-0 shadow-none text-left"
+            />
           ) : (
             filteredLabels.map((label) => {
               const edit = edits[label.id] ?? {

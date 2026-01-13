@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertTitle } from '@/components/ui/alert';
 import { EmptyState } from '@/components/empty-state';
@@ -90,11 +91,24 @@ export default async function RoomsPage() {
         })}
       </div>
 
-      {!rooms?.length && !error && !reporterPending ? (
+      {!rooms?.length && !error ? (
         <EmptyState
           icon={<MapPin className="h-6 w-6 text-slate-400" aria-hidden />}
           title="No rooms found"
-          description="Rooms appear once a moderator creates them. Check back later or contact support."
+          description={
+            <>
+              Rooms appear once a moderator creates them.{' '}
+              {reporterPending
+                ? 'Your reporter credential is still pending approval, so rooms remain hidden until it clears.'
+                : 'If you expected rooms, ask your moderator to invite you or check back soon.'}{' '}
+              In the meantime, explore the <Link className="font-semibold text-primary underline" href="/demo-room">Demo Room</Link> to see how things work.
+            </>
+          }
+          action={
+            <Button size="sm" variant="outline" asChild>
+              <Link href="/demo-room">Visit demo room</Link>
+            </Button>
+          }
         />
       ) : null}
     </div>

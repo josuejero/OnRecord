@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { getEnv } from '@/lib/env';
+import { toast } from 'sonner';
 
 async function downloadBlob(filename: string, blob: Blob) {
   const url = URL.createObjectURL(blob);
@@ -21,6 +22,7 @@ export function ExportButtonsClient(props: { slug: string }) {
 
   async function run(format: 'json' | 'csv') {
     setBusy(format);
+    toast('Download started');
     try {
       const res = await fetch(`${env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/export-session`, {
         method: 'POST',
@@ -35,6 +37,12 @@ export function ExportButtonsClient(props: { slug: string }) {
       if (!res.ok) throw new Error(await res.text());
       const blob = await res.blob();
       await downloadBlob(`onrecord-${props.slug}.${format}`, blob);
+      toast.success('Download ready');
+    } catch (error: unknown) {
+      toast.error(
+        `Download failed: ${error instanceof Error ? error.message : 'Unknown error occurred.'}`,
+      );
+      throw error;
     } finally {
       setBusy(null);
     }

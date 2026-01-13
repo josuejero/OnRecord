@@ -9,6 +9,9 @@ import {
 } from '@/components/ui/table';
 import { requireRole } from '@/lib/auth/require';
 import { supabaseServer } from '@/lib/supabase/server';
+import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/empty-state';
+import { BarChart } from 'lucide-react';
 
 function fmtSeconds(v: number | null | undefined) {
   if (v === null || v === undefined) return '—';
@@ -79,73 +82,94 @@ export default async function InsightsPage() {
       </div>
 
       <div className="overflow-x-auto rounded-md border">
-        <Table size="dense" stickyHeader>
-          <TableHeader>
-            <TableRow>
-              <TableHeadCell>Room</TableHeadCell>
-              <TableHeadCell>Session</TableHeadCell>
-              <TableHeadCell>Answered</TableHeadCell>
-              <TableHeadCell>Rejected</TableHeadCell>
-              <TableHeadCell>Rejection rate</TableHeadCell>
-              <TableHeadCell>Avg time-to-answer</TableHeadCell>
-              <TableHeadCell>Top terms</TableHeadCell>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sessionRows.map((s) => {
-              const ins = s.session_insights?.[0] ?? null;
-              const rejectionRateValue = ins?.rejection_rate;
-              const avgTimeValue = ins?.avg_time_to_answer_seconds;
-              const primaryRoom = s.rooms?.[0] ?? null;
-              const primaryFigure = primaryRoom?.public_figures?.[0] ?? null;
-              const roomTitle = primaryRoom?.title ?? 'Room';
-              const figure = primaryFigure?.name ?? 'Figure';
-              const roomUrl =
-                primaryRoom && primaryFigure && primaryRoom.slug && primaryFigure.slug
-                  ? `/rooms/${primaryFigure.slug}/${primaryRoom.slug}`
-                  : '#';
+        {sessionRows.length ? (
+          <Table size="dense" stickyHeader>
+            <TableHeader>
+              <TableRow>
+                <TableHeadCell>Room</TableHeadCell>
+                <TableHeadCell>Session</TableHeadCell>
+                <TableHeadCell>Answered</TableHeadCell>
+                <TableHeadCell>Rejected</TableHeadCell>
+                <TableHeadCell>Rejection rate</TableHeadCell>
+                <TableHeadCell>Avg time-to-answer</TableHeadCell>
+                <TableHeadCell>Top terms</TableHeadCell>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sessionRows.map((s) => {
+                const ins = s.session_insights?.[0] ?? null;
+                const rejectionRateValue = ins?.rejection_rate;
+                const avgTimeValue = ins?.avg_time_to_answer_seconds;
+                const primaryRoom = s.rooms?.[0] ?? null;
+                const primaryFigure = primaryRoom?.public_figures?.[0] ?? null;
+                const roomTitle = primaryRoom?.title ?? 'Room';
+                const figure = primaryFigure?.name ?? 'Figure';
+                const roomUrl =
+                  primaryRoom && primaryFigure && primaryRoom.slug && primaryFigure.slug
+                    ? `/rooms/${primaryFigure.slug}/${primaryRoom.slug}`
+                    : '#';
 
-              return (
-                <TableRow key={s.id}>
-                  <TableCell>
-                    <div className="font-medium">{figure}</div>
-                    <div className="text-muted-foreground">{roomTitle}</div>
-                  </TableCell>
-                  <TableCell>
-                    <Link className="underline" href={roomUrl}>
-                      {s.status}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    {ins?.questions_answered ?? '—'} / {ins?.questions_total ?? '—'}
-                  </TableCell>
-                  <TableCell>{ins?.questions_rejected ?? '—'}</TableCell>
-                  <TableCell>
-                    {rejectionRateValue != null
-                      ? `${(Number(rejectionRateValue) * 100).toFixed(1)}%`
-                      : '—'}
-                  </TableCell>
-                  <TableCell>
-                    {avgTimeValue != null ? fmtSeconds(Number(avgTimeValue)) : '—'}
-                  </TableCell>
-                  <TableCell>
-                    {ins?.top_terms && ins.top_terms.length ? (
-                      <div className="flex flex-wrap gap-2">
-                        {ins.top_terms.slice(0, 6).map((t) => (
-                          <span key={t.term} className="rounded-full border px-2 py-1 text-xs">
-                            {t.term}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+                return (
+                  <TableRow key={s.id}>
+                    <TableCell>
+                      <div className="font-medium">{figure}</div>
+                      <div className="text-muted-foreground">{roomTitle}</div>
+                    </TableCell>
+                    <TableCell>
+                      <Link className="underline" href={roomUrl}>
+                        {s.status}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      {ins?.questions_answered ?? '—'} / {ins?.questions_total ?? '—'}
+                    </TableCell>
+                    <TableCell>{ins?.questions_rejected ?? '—'}</TableCell>
+                    <TableCell>
+                      {rejectionRateValue != null
+                        ? `${(Number(rejectionRateValue) * 100).toFixed(1)}%`
+                        : '—'}
+                    </TableCell>
+                    <TableCell>
+                      {avgTimeValue != null ? fmtSeconds(Number(avgTimeValue)) : '—'}
+                    </TableCell>
+                    <TableCell>
+                      {ins?.top_terms && ins.top_terms.length ? (
+                        <div className="flex flex-wrap gap-2">
+                          {ins.top_terms.slice(0, 6).map((t) => (
+                            <span key={t.term} className="rounded-full border px-2 py-1 text-xs">
+                              {t.term}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        ) : (
+          <div className="p-6">
+            <EmptyState
+              icon={<BarChart className="h-6 w-6 text-slate-400" aria-hidden />}
+              title="No insights yet"
+              description={
+                <>
+                  The insights table is empty because no sessions have cached metrics yet. Run
+                  “Cleanup + refresh insights” from a room session to populate this list.
+                </>
+              }
+              action={
+                <Button size="sm" variant="outline" asChild>
+                  <Link href="/rooms">Visit rooms</Link>
+                </Button>
+              }
+              className="m-0 border-none bg-transparent p-0 shadow-none"
+            />
+          </div>
+        )}
       </div>
 
       <div className="text-xs text-muted-foreground">
