@@ -1,0 +1,8 @@
+{
+  "run_id": "phase6-local",
+  "timestamp": "2026-02-20T16:45:00.000Z",
+  "prompt_versions": ["recap-v1", "concerns-v1", "followups-v1"],
+  "status": "pass",
+  "summary": "Deterministic mock eval ensuring the recap schema and safety checks remain steady.",
+  "artifact_url": "https://github.com/wholesway/OnRecord/actions"
+}

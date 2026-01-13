@@ -1,0 +1,11 @@
+{
+  "dataset": "demo",
+  "files": {
+    "transcripts.jsonl": {
+      "records": 2,
+      "counts": {},
+      "snippets": {}
+    }
+  },
+  "totals": {}
+}

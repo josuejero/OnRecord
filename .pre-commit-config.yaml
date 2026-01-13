@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: block-raw-datasets
+        name: Block raw demo datasets from commits
+        entry: python tools/insights/check_raw_dataset_commit.py
+        language: python
+        pass_filenames: false
+        stages: [commit]

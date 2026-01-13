@@ -1,0 +1,10 @@
+active_prompts:
+  - name: recap
+    version: v1
+    file: prompts/recap/v1.yml
+  - name: concerns
+    version: v1
+    file: prompts/concerns/v1.yml
+  - name: followups
+    version: v1
+    file: prompts/followups/v1.yml

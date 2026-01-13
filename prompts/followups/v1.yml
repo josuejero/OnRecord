@@ -1,0 +1,17 @@
+version: followups-v1
+purpose: |
+  Surface follow-up questions that reporters or staff should ask after the session in order to clarify outstanding facts, status, or next steps.
+input_schema:
+  transcript: |
+    Approved transcript text. Questions should probe points of ambiguity or action items.
+output_schema:
+  follow_up_questions: |
+    Array of 1-3 question-formatted sentences. Each question must end with a question mark and relate directly to the transcript.
+examples:
+  - input:
+      transcript: |
+        Moderator: Please confirm the new timeline. Staff: We are still waiting on the consultant for final dates, but hope to complete by April.
+    output:
+      follow_up_questions:
+        - When will the consultant share the final timeline, and who will approve it?
+        - Should we expect any interim updates before the April target?

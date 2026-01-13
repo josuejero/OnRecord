@@ -1,0 +1,19 @@
+version: concerns-v1
+purpose: |
+  Extract the two most pressing concerns that OnRecord editors should highlight in the recap notes so staff can confirm them with the transcript or subject matter experts.
+input_schema:
+  transcript: |
+    Full cleaned transcript text for a session. Expect speaker tags, sanitization, and an emphasis on action or risk statements.
+output_schema:
+  key_concerns: |
+    Exactly two entries. Each should include a concise title, a detailed description, and optional evidence spans or labels that tie the concern to a transcript fragment.
+examples:
+  - input:
+      transcript: |
+        Reporter: Will downtown resiliency funding impact the emergency shelter budget? City Planner: The fund shifts 20% of the resiliency allocation to shelters, but only after pilot studies.
+    output:
+      key_concerns:
+        - title: Funding shift
+          detail: 20% of the resiliency budget will be redirected to the shelter program contingent on upcoming pilot results.
+        - title: Implementation caveat
+          detail: The reallocation fully depends on a pilot study, so the shelter funding is not guaranteed beyond the trial.

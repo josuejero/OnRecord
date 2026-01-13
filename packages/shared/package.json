@@ -1,0 +1,13 @@
+{
+  "name": "@onrecord/shared",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "dependencies": {
+    "zod": "^3.23.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}

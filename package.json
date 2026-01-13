@@ -1,0 +1,35 @@
+{
+  "name": "onrecord",
+  "private": true,
+  "packageManager": "pnpm@10.26.2",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @onrecord/web dev",
+    "lint": "pnpm -r --if-present lint",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "e2e": "pnpm --filter @onrecord/e2e test",
+    "supabase:init": "pnpm exec supabase init",
+    "supabase:start": "pnpm exec supabase start",
+    "supabase:stop": "pnpm exec supabase stop",
+    "supabase:reset": "pnpm exec supabase db reset",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "seed:users": "pnpm --filter @onrecord/web exec node scripts/seed-users.mjs",
+    "policy:test": "pnpm --filter @onrecord/web exec node scripts/rls-negative-tests.mjs",
+    "test:web:e2e": "pnpm --filter @onrecord/web test:e2e",
+    "ci:local": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm policy:test && pnpm test:web:e2e && pnpm e2e",
+    "eval:promptfoo": "promptfoo eval --config eval/promptfooconfig.yml -o eval/results.json",
+    "eval:validate": "node eval/validate-results.mjs",
+    "eval": "pnpm eval:promptfoo && pnpm eval:validate",
+    "verify:demo": "pnpm supabase:reset && pnpm seed:users && pnpm --filter @onrecord/web build"
+  },
+  "devDependencies": {
+    "prettier": "^3.0.0",
+    "zod": "^3.25.76",
+    "promptfoo": "0.120.11",
+    "supabase": "2.70.5"
+  }
+}

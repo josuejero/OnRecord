@@ -1,0 +1,36 @@
+version: recap-v1
+purpose: |
+  Produce the authoritative OnRecord recap for a pressroom transcript: summarize the session, call out the two most important concerns, list follow-up questions, and remind editors that the recap is a draft (no medical advice or directives).
+input_schema:
+  transcript: |
+    Cleaned transcript text (string, typically 2k-20k characters) pulled from Supabase. The transcript may already include speaker labels and sanitized content (no PII or classified detail).
+output_schema:
+  summary: |
+    String containing approximately three concise sentences (80-400 characters) that highlight the main takeaways and tone of the session.
+  key_concerns: |
+    Array of exactly two objects (title, detail) that surface a key takeaway and a supporting detail. Optional evidence_span and label fields describe where the concern came from.
+  follow_up_questions: |
+    Array of question-formatted strings (each ending with a question mark) offering at least one action item or verification request.
+  safety_notes: |
+    Safety-focused sentence that explicitly labels the recap as a draft and refrains from offering medical or legal directives.
+  verification_notes: |
+    Optional sentence describing how staff should confirm statements before publishing.
+examples:
+  - input:
+      transcript: |
+        Moderator: We are here to review the climate resilience plan. Councilmember: We will release new dashboards by March that track stormwater permits. Engineer: The downtown transit working group will share ridership data every Friday.
+    output:
+      summary: |
+        The council committed to delivering a new climate resilience dashboard, promised weekly transit stats, and framed the recap as a draft that needs confirmation before sharing.
+      key_concerns:
+        - title: Key takeaway
+          detail: Council leadership pledged a March dashboard rollout for stormwater permit tracking.
+          evidence_span:
+            start_offset: 35
+            end_offset: 104
+        - title: Conversation detail
+          detail: Downtown transit will add a Friday cadence of ridership statistics to support decision-making.
+      follow_up_questions:
+        - What metrics will the dashboard publish first?
+      safety_notes: Draft recap only; verify all facts with the transcript and treat the content as informational, not medical advice.
+      verification_notes: Compare every highlighted claim against the audio transcript before publishing.
