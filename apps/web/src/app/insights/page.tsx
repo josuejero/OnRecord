@@ -1,4 +1,12 @@
 import Link from 'next/link';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHeadCell,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { requireRole } from '@/lib/auth/require';
 import { supabaseServer } from '@/lib/supabase/server';
 
@@ -71,19 +79,19 @@ export default async function InsightsPage() {
       </div>
 
       <div className="overflow-x-auto rounded-md border">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50 text-left">
-            <tr>
-              <th className="p-3">Room</th>
-              <th className="p-3">Session</th>
-              <th className="p-3">Answered</th>
-              <th className="p-3">Rejected</th>
-              <th className="p-3">Rejection rate</th>
-              <th className="p-3">Avg time-to-answer</th>
-              <th className="p-3">Top terms</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table size="dense" stickyHeader>
+          <TableHeader>
+            <TableRow>
+              <TableHeadCell>Room</TableHeadCell>
+              <TableHeadCell>Session</TableHeadCell>
+              <TableHeadCell>Answered</TableHeadCell>
+              <TableHeadCell>Rejected</TableHeadCell>
+              <TableHeadCell>Rejection rate</TableHeadCell>
+              <TableHeadCell>Avg time-to-answer</TableHeadCell>
+              <TableHeadCell>Top terms</TableHeadCell>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {sessionRows.map((s) => {
               const ins = s.session_insights?.[0] ?? null;
               const rejectionRateValue = ins?.rejection_rate;
@@ -98,29 +106,29 @@ export default async function InsightsPage() {
                   : '#';
 
               return (
-                <tr key={s.id} className="border-t">
-                  <td className="p-3">
+                <TableRow key={s.id}>
+                  <TableCell>
                     <div className="font-medium">{figure}</div>
                     <div className="text-muted-foreground">{roomTitle}</div>
-                  </td>
-                  <td className="p-3">
+                  </TableCell>
+                  <TableCell>
                     <Link className="underline" href={roomUrl}>
                       {s.status}
                     </Link>
-                  </td>
-                  <td className="p-3">
+                  </TableCell>
+                  <TableCell>
                     {ins?.questions_answered ?? '—'} / {ins?.questions_total ?? '—'}
-                  </td>
-                  <td className="p-3">{ins?.questions_rejected ?? '—'}</td>
-                  <td className="p-3">
+                  </TableCell>
+                  <TableCell>{ins?.questions_rejected ?? '—'}</TableCell>
+                  <TableCell>
                     {rejectionRateValue != null
                       ? `${(Number(rejectionRateValue) * 100).toFixed(1)}%`
                       : '—'}
-                  </td>
-                  <td className="p-3">
+                  </TableCell>
+                  <TableCell>
                     {avgTimeValue != null ? fmtSeconds(Number(avgTimeValue)) : '—'}
-                  </td>
-                  <td className="p-3">
+                  </TableCell>
+                  <TableCell>
                     {ins?.top_terms && ins.top_terms.length ? (
                       <div className="flex flex-wrap gap-2">
                         {ins.top_terms.slice(0, 6).map((t) => (
@@ -132,12 +140,12 @@ export default async function InsightsPage() {
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               );
             })}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       <div className="text-xs text-muted-foreground">

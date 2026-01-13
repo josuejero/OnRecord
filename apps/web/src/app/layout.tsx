@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import StatusChip from '@/components/status-chip';
+import { UiToaster } from '@/components/ui/sonner';
 import { getFeatureFlags } from '@/lib/config/features';
 
 export const metadata: Metadata = {
@@ -16,6 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className="bg-slate-50 text-slate-900 antialiased">
+        <UiToaster />
         <header className="border-b border-slate-200 bg-white shadow-sm">
           <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
             <Link href="/" className="font-semibold">

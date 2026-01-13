@@ -1,6 +1,8 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ClientErrorBoundary } from '@/components/client-error-boundary';
+import { ErrorState } from '@/components/error-state';
 import { supabaseServer } from '@/lib/supabase/server';
 import { requireRole } from '@/lib/auth/require';
 import {
@@ -273,11 +275,22 @@ export default async function RoomDetailPage({
         </CardHeader>
         <CardContent className="text-sm text-slate-600">
           {live ? (
-            <QuestionQueueClient
-              sessionId={live.id}
-              activeSessionId={activeSessionId}
-              role={role}
-            />
+            <ClientErrorBoundary
+              fallbackRender={({ error, reset }) => (
+                <ErrorState
+                  title="Realtime queue error"
+                  message={error.message}
+                  onRetry={reset}
+                  className="w-full"
+                />
+              )}
+            >
+              <QuestionQueueClient
+                sessionId={live.id}
+                activeSessionId={activeSessionId}
+                role={role}
+              />
+            </ClientErrorBoundary>
           ) : (
             <div className="text-slate-500">
               No live session. Questions open when the session is live.

@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabaseBrowser } from '@/lib/supabase/browser';
+import { Alert, AlertTitle } from '@/components/ui/alert';
+import { LoadingButton } from '@/components/loading-button';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -432,9 +434,10 @@ export function QuestionQueueClient({
   return (
     <div className="space-y-6">
       {error ? (
-        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          {error}
-        </div>
+        <Alert variant="error">
+          <AlertTitle>Question queue error</AlertTitle>
+          <p>{error}</p>
+        </Alert>
       ) : null}
 
       {/* Reporter composer */}
@@ -461,13 +464,15 @@ export function QuestionQueueClient({
           />
 
           <div className="flex justify-end">
-            <Button
+            <LoadingButton
               data-testid="question-submit"
+              loading={submitting}
+              loadingText="Submitting question"
               onClick={submitQuestion}
-              disabled={!activeSessionId || submitting || !body.trim()}
+              disabled={!activeSessionId || !body.trim()}
             >
-              {submitting ? 'Submitting…' : 'Submit'}
-            </Button>
+              Submit
+            </LoadingButton>
           </div>
         </div>
       ) : null}
@@ -631,13 +636,15 @@ export function QuestionQueueClient({
                     <div className="text-xs text-slate-500">
                       Publishing marks the question as answered.
                     </div>
-                    <Button
+                    <LoadingButton
                       data-testid="answer-submit"
+                      loading={answerSubmitting}
+                      loadingText="Publishing answer"
                       onClick={postAnswer}
-                      disabled={answerSubmitting || !answerDraft.trim()}
+                      disabled={!answerDraft.trim()}
                     >
-                      {answerSubmitting ? 'Publishing…' : 'Publish answer'}
-                    </Button>
+                      Publish answer
+                    </LoadingButton>
                   </div>
                 </>
               )}

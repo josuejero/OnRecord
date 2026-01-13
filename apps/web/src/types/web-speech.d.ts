@@ -10,7 +10,7 @@ declare global {
     readonly isFinal: boolean;
   }
 
-  interface SpeechRecognitionResultList extends Array<SpeechRecognitionResult> {}
+  type SpeechRecognitionResultList = Array<SpeechRecognitionResult>;
 
   interface SpeechRecognitionEvent extends Event {
     readonly resultIndex: number;

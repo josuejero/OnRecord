@@ -1,12 +1,18 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type TestInfo } from '@playwright/test';
 
 test.describe('voice input fixture', () => {
-  test('displays fallback banner when Web Speech API is absent', async ({ page }) => {
+  test('displays fallback banner when Web Speech API is absent', async ({ page }, testInfo) => {
+    console.info(`[e2e] Starting ${testInfo.title}`);
     await page.goto('/dev/audio-input');
     await expect(page.getByTestId('voice-input-fallback')).toBeVisible();
+    console.info(`[e2e] Completed ${testInfo.title}`);
   });
 
-  test('transcript save and processing requests are still reachable', async ({ page }) => {
+  test('transcript save and processing requests are still reachable', async ({
+    page,
+  }, testInfo) => {
+    console.info(`[e2e] Starting ${testInfo.title}`);
+
     let saveRequested = false;
     let processRequested = false;
 
@@ -28,5 +34,6 @@ test.describe('voice input fixture', () => {
 
     await page.getByTestId('process-transcript-button').click();
     await expect.poll(() => processRequested).toBeTruthy();
+    console.info(`[e2e] Completed ${testInfo.title}`);
   });
 });

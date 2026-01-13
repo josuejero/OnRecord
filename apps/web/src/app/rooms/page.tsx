@@ -1,7 +1,10 @@
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertTitle } from '@/components/ui/alert';
+import { EmptyState } from '@/components/empty-state';
 import { supabaseServer } from '@/lib/supabase/server';
 import { requireRole } from '@/lib/auth/require';
+import { MapPin } from 'lucide-react';
 
 type RoomRow = {
   id: string;
@@ -44,17 +47,21 @@ export default async function RoomsPage() {
       </Card>
 
       {reporterPending ? (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          Your reporter credential is{' '}
-          <span className="font-semibold">{reporter?.credential_status ?? 'pending'}</span>. Until
-          it is approved, room access is denied by the database.
-        </div>
+        <Alert variant="warning">
+          <AlertTitle>Reporter credential pending</AlertTitle>
+          <p>
+            Your reporter credential is{' '}
+            <span className="font-semibold">{reporter?.credential_status ?? 'pending'}</span>.
+            Until it is approved, room access is denied by the database.
+          </p>
+        </Alert>
       ) : null}
 
       {error ? (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          Unable to load rooms. {error.message}
-        </div>
+        <Alert variant="error">
+          <AlertTitle>Unable to load rooms</AlertTitle>
+          <p>{error.message}</p>
+        </Alert>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -84,7 +91,11 @@ export default async function RoomsPage() {
       </div>
 
       {!rooms?.length && !error && !reporterPending ? (
-        <div className="text-sm text-slate-500">No rooms found.</div>
+        <EmptyState
+          icon={<MapPin className="h-6 w-6 text-slate-400" aria-hidden />}
+          title="No rooms found"
+          description="Rooms appear once a moderator creates them. Check back later or contact support."
+        />
       ) : null}
     </div>
   );
