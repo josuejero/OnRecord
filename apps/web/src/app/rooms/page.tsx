@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { EmptyState } from '@/components/empty-state';
 import { supabaseServer } from '@/lib/supabase/server';
 import { requireRole } from '@/lib/auth/require';
@@ -33,7 +33,7 @@ export default async function RoomsPage() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="border border-slate-200 shadow-sm">
         <CardHeader>
           <CardTitle data-testid="rooms-title">Rooms</CardTitle>
         </CardHeader>
@@ -50,18 +50,18 @@ export default async function RoomsPage() {
       {reporterPending ? (
         <Alert variant="warning">
           <AlertTitle>Reporter credential pending</AlertTitle>
-          <p>
+          <AlertDescription>
             Your reporter credential is{' '}
-            <span className="font-semibold">{reporter?.credential_status ?? 'pending'}</span>.
-            Until it is approved, room access is denied by the database.
-          </p>
+            <span className="font-semibold">{reporter?.credential_status ?? 'pending'}</span>. Until
+            it is approved, room access is denied by the database.
+          </AlertDescription>
         </Alert>
       ) : null}
 
       {error ? (
         <Alert variant="error">
           <AlertTitle>Unable to load rooms</AlertTitle>
-          <p>{error.message}</p>
+          <AlertDescription>{error.message}</AlertDescription>
         </Alert>
       ) : null}
 
@@ -69,22 +69,30 @@ export default async function RoomsPage() {
         {(rooms as RoomRow[] | null)?.map((room) => {
           const figSlug = room.public_figures?.slug ?? 'unknown';
           return (
-            <Card key={room.id} className="hover:shadow-sm transition">
+            <Card
+              key={room.id}
+              className="group border border-slate-200 bg-white transition hover:shadow-lg focus-within:border-slate-900 focus-within:ring-2 focus-within:ring-primary/60"
+            >
               <CardHeader>
                 <CardTitle className="text-base">{room.title}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2 text-sm text-slate-600">
+              <CardContent className="space-y-3 text-sm text-slate-600">
                 <div className="text-slate-500">Public figure</div>
                 <div className="font-semibold text-slate-900">
                   {room.public_figures?.name ?? 'Unknown'}
                 </div>
-
-                <Link
-                  className="inline-flex items-center text-slate-900 underline"
-                  href={`/rooms/${encodeURIComponent(figSlug)}/${encodeURIComponent(room.slug)}`}
+                <Button
+                  asChild
+                  size="sm"
+                  variant="outline"
+                  className="w-full justify-center"
                 >
-                  Open room
-                </Link>
+                  <Link
+                    href={`/rooms/${encodeURIComponent(figSlug)}/${encodeURIComponent(room.slug)}`}
+                  >
+                    Open room
+                  </Link>
+                </Button>
               </CardContent>
             </Card>
           );

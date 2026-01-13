@@ -13,6 +13,7 @@ export function ToastBridge() {
 
   useEffect(() => {
     const toastKey = searchParams.get('toast');
+    const toastError = searchParams.get('toast_error');
     if (!toastKey || handledRef.current === toastKey) return;
     handledRef.current = toastKey;
 
@@ -23,9 +24,17 @@ export function ToastBridge() {
       toast.success('Session started', {
         description: 'The session is live. Questions and recaps are now available.',
       });
+    } else if (toastKey === toastKeys.SESSION_START_FAILED) {
+      toast.error('Unable to start session', {
+        description: toastError ?? 'Something went wrong. Please try again.',
+      });
     } else if (toastKey === toastKeys.SESSION_ENDED) {
       toast.success('Session ended', {
         description: 'The session is closed. Start a new one when you are ready.',
+      });
+    } else if (toastKey === toastKeys.SESSION_END_FAILED) {
+      toast.error('Unable to end session', {
+        description: toastError ?? 'Something went wrong. Please try again.',
       });
     } else if (toastKey === toastKeys.RECAP_PUBLISHED) {
       toast.success('Recap published', {
@@ -47,12 +56,25 @@ export function ToastBridge() {
             }
           : undefined,
       });
+    } else if (toastKey === toastKeys.RECAP_UNPUBLISHED) {
+      toast.success('Recap unpublished', {
+        description: 'The recap is no longer public.',
+      });
+    } else if (toastKey === toastKeys.RECAP_PUBLISH_FAILED) {
+      toast.error('Unable to publish recap', {
+        description: toastError ?? 'Something went wrong. Please try again.',
+      });
+    } else if (toastKey === toastKeys.RECAP_UNPUBLISH_FAILED) {
+      toast.error('Unable to unpublish recap', {
+        description: toastError ?? 'Something went wrong. Please try again.',
+      });
     }
 
     const params = new URLSearchParams(searchParams.toString());
     params.delete('toast');
     params.delete('slug');
     params.delete('asset_url');
+    params.delete('toast_error');
 
     const nextQuery = params.toString();
     const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;

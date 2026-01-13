@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ClientErrorBoundary } from '@/components/client-error-boundary';
 import { ErrorState } from '@/components/error-state';
 import { EmptyState } from '@/components/empty-state';
@@ -157,9 +158,10 @@ export default async function RoomDetailPage({
       </Card>
 
       {sessionsErr ? (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {sessionsErr.message}
-        </div>
+        <Alert variant="error">
+          <AlertTitle>Unable to load sessions</AlertTitle>
+          <AlertDescription>{sessionsErr.message}</AlertDescription>
+        </Alert>
       ) : null}
 
       <Card>
@@ -302,6 +304,7 @@ export default async function RoomDetailPage({
                 <ErrorState
                   title="Realtime queue error"
                   message={error.message}
+                  retryLabel="Retry"
                   onRetry={reset}
                   className="w-full"
                 />
@@ -353,18 +356,43 @@ export default async function RoomDetailPage({
         <div className="space-y-4">
           <AssetUploadPanel sessionId={latest.id} revalidatePath={revalidate} />
           {recapError ? (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700">
-              {recapError}
-            </div>
+            <Alert variant="error">
+              <AlertTitle>Recap data error</AlertTitle>
+              <AlertDescription>{recapError}</AlertDescription>
+            </Alert>
           ) : null}
-          <RecapPanel
-            key={`${latest.id}-${recaps[0]?.id ?? 'none'}`}
-            sessionId={latest.id}
-            revalidatePath={revalidate}
-            recaps={recaps}
-            featureFlags={featureFlags}
-          />
-          <TranscriptPanel sessionId={latest.id} revalidate={revalidate} />
+          <ClientErrorBoundary
+            fallbackRender={({ error, reset }) => (
+              <ErrorState
+                title="Recap panel error"
+                message={error.message}
+                retryLabel="Retry"
+                onRetry={reset}
+                className="w-full"
+              />
+            )}
+          >
+            <RecapPanel
+              key={`${latest.id}-${recaps[0]?.id ?? 'none'}`}
+              sessionId={latest.id}
+              revalidatePath={revalidate}
+              recaps={recaps}
+              featureFlags={featureFlags}
+            />
+          </ClientErrorBoundary>
+          <ClientErrorBoundary
+            fallbackRender={({ error, reset }) => (
+              <ErrorState
+                title="Transcript panel error"
+                message={error.message}
+                retryLabel="Retry"
+                onRetry={reset}
+                className="w-full"
+              />
+            )}
+          >
+            <TranscriptPanel sessionId={latest.id} revalidate={revalidate} />
+          </ClientErrorBoundary>
         </div>
       ) : null}
     </div>

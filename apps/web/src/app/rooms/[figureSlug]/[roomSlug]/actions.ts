@@ -28,6 +28,12 @@ function redirectWithToast(path: string, toastValue: string, extras: Record<stri
   redirect(buildRedirectUrl(path, toastValue, extras));
 }
 
+function toastErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message) return error.message;
+  if (typeof error === 'string') return error;
+  return 'Something went wrong. Please try again.';
+}
+
 function requireString(fd: FormData, key: string) {
   const v = fd.get(key);
   if (typeof v !== 'string' || v.trim().length === 0) throw new Error(`missing_${key}`);
@@ -110,8 +116,15 @@ export async function startSession(formData: FormData) {
   const revalidate = requireString(formData, 'revalidate');
 
   const supabase = supabaseServer();
-  const { error } = await supabase.rpc('start_session', { p_session_id: sessionId });
-  if (error) throw new Error(error.message);
+  try {
+    const { error } = await supabase.rpc('start_session', { p_session_id: sessionId });
+    if (error) throw new Error(error.message);
+  } catch (err) {
+    revalidatePath(revalidate);
+    redirectWithToast(revalidate, toastKeys.SESSION_START_FAILED, {
+      toast_error: toastErrorMessage(err),
+    });
+  }
 
   revalidatePath(revalidate);
   redirectWithToast(revalidate, toastKeys.SESSION_STARTED);
@@ -122,8 +135,15 @@ export async function endSession(formData: FormData) {
   const revalidate = requireString(formData, 'revalidate');
 
   const supabase = supabaseServer();
-  const { error } = await supabase.rpc('end_session', { p_session_id: sessionId });
-  if (error) throw new Error(error.message);
+  try {
+    const { error } = await supabase.rpc('end_session', { p_session_id: sessionId });
+    if (error) throw new Error(error.message);
+  } catch (err) {
+    revalidatePath(revalidate);
+    redirectWithToast(revalidate, toastKeys.SESSION_END_FAILED, {
+      toast_error: toastErrorMessage(err),
+    });
+  }
 
   revalidatePath(revalidate);
   redirectWithToast(revalidate, toastKeys.SESSION_ENDED);
@@ -144,13 +164,21 @@ export async function publishRecap(formData: FormData) {
   const title = `${publicFigureName} • ${roomTitle} • Recap`;
 
   const supabase = supabaseServer();
-  const { error } = await supabase.rpc('publish_recap', {
-    p_session_id: sessionId,
-    p_slug: slug,
-    p_title: title,
-    p_summary: summary,
-  });
-  if (error) throw new Error(error.message);
+  try {
+    const { error } = await supabase.rpc('publish_recap', {
+      p_session_id: sessionId,
+      p_slug: slug,
+      p_title: title,
+      p_summary: summary,
+    });
+    if (error) throw new Error(error.message);
+  } catch (err) {
+    revalidatePath(revalidate);
+    revalidatePath(`/recaps/${slug}`);
+    redirectWithToast(revalidate, toastKeys.RECAP_PUBLISH_FAILED, {
+      toast_error: toastErrorMessage(err),
+    });
+  }
 
   revalidatePath(revalidate);
   revalidatePath(`/recaps/${slug}`);
@@ -163,11 +191,20 @@ export async function unpublishRecap(formData: FormData) {
   const revalidate = requireString(formData, 'revalidate');
 
   const supabase = supabaseServer();
-  const { error } = await supabase.rpc('unpublish_recap', { p_session_id: sessionId });
-  if (error) throw new Error(error.message);
+  try {
+    const { error } = await supabase.rpc('unpublish_recap', { p_session_id: sessionId });
+    if (error) throw new Error(error.message);
+  } catch (err) {
+    revalidatePath(revalidate);
+    revalidatePath(`/recaps/${slug}`);
+    redirectWithToast(revalidate, toastKeys.RECAP_UNPUBLISH_FAILED, {
+      toast_error: toastErrorMessage(err),
+    });
+  }
 
   revalidatePath(revalidate);
   revalidatePath(`/recaps/${slug}`);
+  redirectWithToast(revalidate, toastKeys.RECAP_UNPUBLISHED);
 }
 
 export async function uploadAsset(formData: FormData) {

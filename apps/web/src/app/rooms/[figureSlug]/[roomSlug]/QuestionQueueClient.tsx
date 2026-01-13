@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 type Role = 'reporter' | 'moderator' | 'staff' | 'admin_service';
 
@@ -37,6 +38,29 @@ type AnswerRow = {
 type SessionRow = {
   id: string;
   active_question_id: string | null;
+};
+
+type ConnectionState = 'connecting' | 'connected' | 'disconnected';
+
+const connectionStatusMeta: Record<
+  ConnectionState,
+  { label: string; dot: string; text: string }
+> = {
+  connecting: {
+    label: 'Connecting to live queue…',
+    dot: 'bg-amber-400',
+    text: 'text-amber-600',
+  },
+  connected: {
+    label: 'Live queue connected',
+    dot: 'bg-emerald-500',
+    text: 'text-slate-600',
+  },
+  disconnected: {
+    label: 'Connection lost, retrying…',
+    dot: 'bg-red-500',
+    text: 'text-red-600',
+  },
 };
 
 function stableSort(list: QuestionRow[]) {
@@ -110,6 +134,7 @@ export function QuestionQueueClient({
   const [answerSubmitting, setAnswerSubmitting] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
+  const [connectionState, setConnectionState] = useState<ConnectionState>('connecting');
 
   const isModeratorLike = role === 'moderator' || role === 'staff' || role === 'admin_service';
 
@@ -200,9 +225,12 @@ export function QuestionQueueClient({
     [activeQuestionId, orderedQuestions],
   );
 
+  const statusMeta = connectionStatusMeta[connectionState];
+
   useEffect(() => {
     if (!sessionId) return;
 
+    setConnectionState('connecting');
     void loadState();
 
     const questionsChannel = supabase
@@ -237,7 +265,17 @@ export function QuestionQueueClient({
           });
         },
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          setConnectionState('connected');
+        } else if (
+          status === 'TIMED_OUT' ||
+          status === 'CHANNEL_ERROR' ||
+          status === 'CLOSED'
+        ) {
+          setConnectionState('disconnected');
+        }
+      });
 
     const answersChannel = supabase
       .channel(`answers:${sessionId}`)
@@ -453,6 +491,14 @@ export function QuestionQueueClient({
           <p>{error}</p>
         </Alert>
       ) : null}
+
+      <div className="flex items-center justify-between text-xs text-slate-500">
+        <div className="flex items-center gap-2">
+          <span className={cn('h-2 w-2 rounded-full', statusMeta.dot)} aria-hidden />
+          <span className={cn('font-medium', statusMeta.text)}>{statusMeta.label}</span>
+        </div>
+        <span className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-400">Realtime</span>
+      </div>
 
       {/* Reporter composer */}
       {role === 'reporter' ? (

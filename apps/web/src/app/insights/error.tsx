@@ -7,11 +7,11 @@ type RouteErrorProps = { error: Error & { digest?: string }; reset: () => void }
 export default function InsightsError({ reset }: RouteErrorProps) {
   return (
     <ErrorState
-      title="Something went wrong loading Insights"
-      message="Cached metrics could not be retrieved. Try again or open a room session to refresh the cache."
+      title="Something went wrong loading insights"
+      message="We couldn’t render the insights dashboard. Try again or return to rooms."
       onRetry={reset}
-      homeHref="/insights"
-      homeLabel="Insights"
+      homeHref="/rooms"
+      homeLabel="Rooms"
     />
   );
 }
