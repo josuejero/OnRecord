@@ -81,12 +81,7 @@ export default async function RoomsPage() {
                 <div className="font-semibold text-slate-900">
                   {room.public_figures?.name ?? 'Unknown'}
                 </div>
-                <Button
-                  asChild
-                  size="sm"
-                  variant="outline"
-                  className="w-full justify-center"
-                >
+                <Button asChild size="sm" variant="outline" className="w-full justify-center">
                   <Link
                     href={`/rooms/${encodeURIComponent(figSlug)}/${encodeURIComponent(room.slug)}`}
                   >
@@ -109,7 +104,11 @@ export default async function RoomsPage() {
               {reporterPending
                 ? 'Your reporter credential is still pending approval, so rooms remain hidden until it clears.'
                 : 'If you expected rooms, ask your moderator to invite you or check back soon.'}{' '}
-              In the meantime, explore the <Link className="font-semibold text-primary underline" href="/demo-room">Demo Room</Link> to see how things work.
+              In the meantime, explore the{' '}
+              <Link className="font-semibold text-primary underline" href="/demo-room">
+                Demo Room
+              </Link>{' '}
+              to see how things work.
             </>
           }
           action={

@@ -4,8 +4,8 @@
 
 OnRecord is the recruiter-ready press conference interface: live room control, question queues, and recap assets all share a single responsive canvas so demos, remote interviews, or async reviews load like production — even when data is slow or missing.
 
-- Responsive, mobile-first panels stretch smoothly from phones to 4K dashboards so every recruiter sees the same polish.  
-- Cross-browser state fidelity keeps skeletons, cards, and dialogs consistent in Chromium, Safari, and Firefox.  
+- Responsive, mobile-first panels stretch smoothly from phones to 4K dashboards so every recruiter sees the same polish.
+- Cross-browser state fidelity keeps skeletons, cards, and dialogs consistent in Chromium, Safari, and Firefox.
 - Accessibility-first interactions plus telemetry-backed debugging let UI interns trace failures, keep assistive markup intact, and ship with confidence.
 
 ## Start here
@@ -35,13 +35,13 @@ Run `pnpm demo` and the script will start Supabase, reset + seed the demo room d
 
 ### Demo accounts
 
-- Reporter: `reporter@onrecord.local` / `password123!`  
+- Reporter: `reporter@onrecord.local` / `password123!`
 - Moderator: `moderator@onrecord.local` / `password123!`
 
 ### What to click
 
-- Open the first “Press Room” card from `/rooms`, then hit **Start session** to warm the queue/live session UI.  
-- Ask a question, approve it, and publish a recap to watch the toast + recap timeline surfaces.  
+- Open the first “Press Room” card from `/rooms`, then hit **Start session** to warm the queue/live session UI.
+- Ask a question, approve it, and publish a recap to watch the toast + recap timeline surfaces.
 - Open the public recap link inside the room to verify the published assets + transcript.
 
 ### How to reset
@@ -66,8 +66,8 @@ Error boundaries, empty states, and retry affordances keep every panel recruiter
 
 ## UI Internship Evidence
 
-- [docs/ui-contract.md](docs/ui-contract.md) — loading, empty, error, and success patterns that match the UI intern checklist.  
-- [docs/ui-reliability.md](docs/ui-reliability.md) — documented failure modes plus recovery flows and telemetry.  
-- [docs/components.md](docs/components.md) — shared primitives that keep the form, table, and dialog UX cohesive.  
+- [docs/ui-contract.md](docs/ui-contract.md) — loading, empty, error, and success patterns that match the UI intern checklist.
+- [docs/ui-reliability.md](docs/ui-reliability.md) — documented failure modes plus recovery flows and telemetry.
+- [docs/components.md](docs/components.md) — shared primitives that keep the form, table, and dialog UX cohesive.
 - [docs/test-matrix.md](docs/test-matrix.md) — automated coverage across lint, types, Playwright, and Axe checks.
 - [docs/accessibility.md](docs/accessibility.md) — accessible standards, ARIA dialog/keyboard patterns, and Axe + keyboard smoke proof.

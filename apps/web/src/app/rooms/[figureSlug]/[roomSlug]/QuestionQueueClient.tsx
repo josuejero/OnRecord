@@ -42,26 +42,24 @@ type SessionRow = {
 
 type ConnectionState = 'connecting' | 'connected' | 'disconnected';
 
-const connectionStatusMeta: Record<
-  ConnectionState,
-  { label: string; dot: string; text: string }
-> = {
-  connecting: {
-    label: 'Connecting to live queue…',
-    dot: 'bg-amber-400',
-    text: 'text-amber-600',
-  },
-  connected: {
-    label: 'Live queue connected',
-    dot: 'bg-emerald-500',
-    text: 'text-slate-600',
-  },
-  disconnected: {
-    label: 'Connection lost, retrying…',
-    dot: 'bg-red-500',
-    text: 'text-red-600',
-  },
-};
+const connectionStatusMeta: Record<ConnectionState, { label: string; dot: string; text: string }> =
+  {
+    connecting: {
+      label: 'Connecting to live queue…',
+      dot: 'bg-amber-400',
+      text: 'text-amber-600',
+    },
+    connected: {
+      label: 'Live queue connected',
+      dot: 'bg-emerald-500',
+      text: 'text-slate-600',
+    },
+    disconnected: {
+      label: 'Connection lost, retrying…',
+      dot: 'bg-red-500',
+      text: 'text-red-600',
+    },
+  };
 
 function stableSort(list: QuestionRow[]) {
   return [...list].sort((a, b) => {
@@ -268,11 +266,7 @@ export function QuestionQueueClient({
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           setConnectionState('connected');
-        } else if (
-          status === 'TIMED_OUT' ||
-          status === 'CHANNEL_ERROR' ||
-          status === 'CLOSED'
-        ) {
+        } else if (status === 'TIMED_OUT' || status === 'CHANNEL_ERROR' || status === 'CLOSED') {
           setConnectionState('disconnected');
         }
       });
@@ -380,26 +374,26 @@ export function QuestionQueueClient({
 
   async function setStatus(questionId: string, status: 'approved' | 'rejected' | 'needs_edit') {
     setError(null);
-  const { error } = await supabase.rpc('set_question_status', {
-    p_question_id: questionId,
-    p_status: status,
-    p_note: null,
-  });
-  if (error) {
-    const message = prettyError(error.message);
-    setError(message);
-    toast.error(message);
-    return;
-  }
+    const { error } = await supabase.rpc('set_question_status', {
+      p_question_id: questionId,
+      p_status: status,
+      p_note: null,
+    });
+    if (error) {
+      const message = prettyError(error.message);
+      setError(message);
+      toast.error(message);
+      return;
+    }
 
-  const label =
-    status === 'approved'
-      ? 'Question approved'
-      : status === 'rejected'
-      ? 'Question rejected'
-      : 'Question sent back for edits';
-  toast.success(label);
-}
+    const label =
+      status === 'approved'
+        ? 'Question approved'
+        : status === 'rejected'
+          ? 'Question rejected'
+          : 'Question sent back for edits';
+    toast.success(label);
+  }
 
   async function moveInQueue(questionId: string, direction: 'up' | 'down') {
     setError(null);

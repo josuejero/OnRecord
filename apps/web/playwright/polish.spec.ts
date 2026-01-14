@@ -5,7 +5,9 @@ import { roomPath } from './helpers/rooms';
 const ROOM_DATA_PATTERN = '**/rooms.json';
 const ROOM_DETAIL_DATA = '**/rooms/demo-figure/demo-room.json';
 
-test('navigating from /rooms to a room surfaces the loading UI before the content', async ({ page }) => {
+test('navigating from /rooms to a room surfaces the loading UI before the content', async ({
+  page,
+}) => {
   await loginAs(page, { email: 'reporter@onrecord.local' });
 
   let shouldDelayRooms = false;

@@ -39,20 +39,20 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   );
 });
 
-const AlertTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
-  function AlertTitle({ className, ...props }, ref) {
-    return (
-      <p ref={ref} className={cn('text-sm font-semibold text-slate-900', className)} {...props} />
-    );
-  },
-);
+const AlertTitle = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(function AlertTitle({ className, ...props }, ref) {
+  return (
+    <p ref={ref} className={cn('text-sm font-semibold text-slate-900', className)} {...props} />
+  );
+});
 
-const AlertDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
-  function AlertDescription({ className, ...props }, ref) {
-    return (
-      <p ref={ref} className={cn('text-sm text-slate-700', className)} {...props} />
-    );
-  },
-);
+const AlertDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(function AlertDescription({ className, ...props }, ref) {
+  return <p ref={ref} className={cn('text-sm text-slate-700', className)} {...props} />;
+});
 
 export { Alert, AlertTitle, AlertDescription };

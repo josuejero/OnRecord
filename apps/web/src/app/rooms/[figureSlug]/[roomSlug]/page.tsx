@@ -1,400 +1,170 @@
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ClientErrorBoundary } from '@/components/client-error-boundary';
-import { ErrorState } from '@/components/error-state';
-import { EmptyState } from '@/components/empty-state';
-import { supabaseServer } from '@/lib/supabase/server';
-import { requireRole } from '@/lib/auth/require';
-import {
-  createScheduledSession,
-  endSession,
-  publishRecap,
-  startSession,
-  unpublishRecap,
-} from './actions';
-import { QuestionQueueClient } from './QuestionQueueClient';
-import { AssetUploadPanel } from './AssetUploadPanel';
-import { RecapPanel } from './RecapPanel';
-import { TranscriptPanel } from './TranscriptPanel';
-import { getFeatureFlags } from '@/lib/config/features';
-import { Recap, RecapSchema } from '@onrecord/shared';
-import { CalendarClock } from 'lucide-react';
+import { unstable_cache } from 'next/cache';
+import { notFound } from 'next/navigation';
 
-type SessionRow = {
-  id: string;
-  status: 'scheduled' | 'live' | 'ended';
-  starts_at: string | null;
-  ends_at: string | null;
-  created_at: string;
-};
+import { PanelErrorBoundary } from '@/components/panel-error-boundary';
+import { ModeratorQueuePanel } from '@/components/room/ModeratorQueuePanel';
+import { QuestionQueueClient } from '@/components/room/QuestionQueueClient';
+import { RecapPanel } from '@/components/room/RecapPanel';
+import { RoomHeader } from '@/components/room/RoomHeader';
+import { TranscriptPanel } from '@/components/room/TranscriptPanel';
+import { createClient } from '@/lib/supabase/server';
 
-type RoomRecapRow = {
-  id: string;
-  prompt_version: string;
-  provider: string;
-  model_id: string;
-  include_in_export: boolean;
-  created_at: string;
-  recap: Recap;
-};
-
-function fmt(ts: string | null) {
-  if (!ts) return '—';
-  const d = new Date(ts);
-  return new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(d);
-}
-
-export default async function RoomDetailPage({
-  params,
-}: {
+type PageProps = {
   params: Promise<{ figureSlug: string; roomSlug: string }>;
-}) {
+};
+
+const getCachedRoom = unstable_cache(
+  async (figureSlug: string, roomSlug: string) => {
+    const supabase = await createClient();
+
+    const { data: figure } = await supabase
+      .from('figures')
+      .select('*')
+      .eq('slug', figureSlug)
+      .maybeSingle();
+
+    if (!figure) return null;
+
+    const { data: room } = await supabase
+      .from('rooms')
+      .select('*')
+      .eq('figure_id', figure.id)
+      .eq('slug', roomSlug)
+      .maybeSingle();
+
+    if (!room) return null;
+
+    return { figure, room };
+  },
+  ['room:by-slug'],
+  { revalidate: 60 },
+);
+
+const getCachedLiveSession = unstable_cache(
+  async (roomId: string) => {
+    const supabase = await createClient();
+
+    const { data: session } = await supabase
+      .from('sessions')
+      .select('*')
+      .eq('room_id', roomId)
+      .eq('status', 'live')
+      .order('created_at', { ascending: false })
+      .maybeSingle();
+
+    return session ?? null;
+  },
+  ['session:live-by-room'],
+  { revalidate: 5 },
+);
+
+const getCachedLatestSession = unstable_cache(
+  async (roomId: string) => {
+    const supabase = await createClient();
+
+    const { data: session } = await supabase
+      .from('sessions')
+      .select('*')
+      .eq('room_id', roomId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    return session ?? null;
+  },
+  ['session:latest-by-room'],
+  { revalidate: 60 },
+);
+
+export default async function RoomPage({ params }: PageProps) {
   const { figureSlug, roomSlug } = await params;
-  const { user, role } = await requireRole(['reporter', 'moderator', 'staff', 'admin_service']);
-  const supabase = supabaseServer();
-  const featureFlags = getFeatureFlags();
 
-  const { data: pf, error: pfErr } = await supabase
-    .from('public_figures')
-    .select('id, slug, name')
-    .eq('slug', figureSlug)
-    .single();
+  const cached = await getCachedRoom(figureSlug, roomSlug);
+  if (!cached) notFound();
 
-  if (pfErr || !pf) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Room not found</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-slate-600">
-          Unable to resolve public figure.
-        </CardContent>
-      </Card>
-    );
-  }
+  const { figure, room } = cached;
 
-  const { data: room, error: roomErr } = await supabase
-    .from('rooms')
-    .select('id, slug, title')
-    .eq('public_figure_id', pf.id)
-    .eq('slug', roomSlug)
-    .single();
+  const live = await getCachedLiveSession(room.id);
+  const latest = await getCachedLatestSession(room.id);
 
-  if (roomErr || !room) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Room not found</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-slate-600">Unable to resolve room.</CardContent>
-      </Card>
-    );
-  }
+  // If there is no session at all, show the room shell but no panels.
+  const session = live ?? latest;
 
-  const { data: sessions, error: sessionsErr } = await supabase
-    .from('sessions')
-    .select('id, status, starts_at, ends_at, created_at')
-    .eq('room_id', room.id)
-    .order('created_at', { ascending: false });
-
-  const list = (sessions as SessionRow[] | null) ?? [];
-  const live = list.find((s) => s.status === 'live') ?? null;
-  const activeSessionId = live?.id ?? null;
-  const latest = live ?? list[0] ?? null;
-  const publicRecapSlug = latest ? `${pf.slug}-${roomSlug}-${latest.id.slice(0, 8)}` : null;
-
-  const canModerate = role === 'moderator' || role === 'staff' || role === 'admin_service';
-  const canCreate = role === 'staff' || role === 'admin_service';
-
-  const revalidate = `/rooms/${encodeURIComponent(figureSlug)}/${encodeURIComponent(roomSlug)}`;
-
-  const recaps: RoomRecapRow[] = [];
-  let recapError: string | null = null;
-  if (latest) {
-    const { data: rawRecaps, error: rawRecapsErr } = await supabase
-      .from('transcript_ai_outputs')
-      .select('id, prompt_version, provider, model_id, output, include_in_export, created_at')
-      .eq('session_id', latest.id)
-      .order('created_at', { ascending: false });
-    if (rawRecapsErr) {
-      recapError = rawRecapsErr.message;
-    }
-    if (rawRecaps?.length) {
-      for (const row of rawRecaps) {
-        const parsed = RecapSchema.safeParse(row.output);
-        if (!parsed.success) continue;
-        recaps.push({
-          id: row.id,
-          prompt_version: row.prompt_version,
-          provider: row.provider,
-          model_id: row.model_id,
-          include_in_export: row.include_in_export,
-          created_at: row.created_at,
-          recap: parsed.data,
-        });
-      }
-    }
-  }
+  const revalidate = async () => {
+    'use server';
+    await getCachedRoom.revalidate?.(figureSlug, roomSlug);
+    await getCachedLiveSession.revalidate?.(room.id);
+    await getCachedLatestSession.revalidate?.(room.id);
+  };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle data-testid="room-title">{room.title}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-slate-600">
-          <div>
-            Public figure: <span className="font-semibold text-slate-900">{pf.name}</span>
+    <div className="flex min-h-dvh flex-col">
+      <RoomHeader
+        figure={figure}
+        room={room}
+        isLive={Boolean(live)}
+        sessionId={session?.id ?? null}
+      />
+
+      <main className="flex flex-1 flex-col gap-4 p-4">
+        {!session ? (
+          <div className="rounded-lg border p-6 text-sm text-muted-foreground">
+            No sessions yet.
           </div>
-          <div>
-            Signed in as: <span className="font-semibold text-slate-900">{user.email}</span>
-          </div>
-          <div>
-            Role: <span className="font-semibold text-slate-900">{role}</span>
-          </div>
-        </CardContent>
-      </Card>
-
-      {sessionsErr ? (
-        <Alert variant="error">
-          <AlertTitle>Unable to load sessions</AlertTitle>
-          <AlertDescription>{sessionsErr.message}</AlertDescription>
-        </Alert>
-      ) : null}
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base" data-testid="session-summary-title">
-            Session
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm text-slate-600">
-          {latest ? (
-            <>
-              <div className="flex items-center gap-2">
-                <Badge data-testid="session-status-badge">{latest.status}</Badge>
-                <span className="text-slate-500">(latest)</span>
-              </div>
-              <div>
-                Starts:{' '}
-                <span className="font-semibold text-slate-900">{fmt(latest.starts_at)}</span>
-              </div>
-              <div>
-                Ends: <span className="font-semibold text-slate-900">{fmt(latest.ends_at)}</span>
-              </div>
-
-              {canModerate ? (
-                <div className="flex flex-wrap gap-2 pt-2">
-                  {latest.status === 'scheduled' ? (
-                    <form action={startSession}>
-                      <input type="hidden" name="session_id" value={latest.id} />
-                      <input type="hidden" name="revalidate" value={revalidate} />
-                      <Button data-testid="session-start" type="submit">
-                        Start session
-                      </Button>
-                    </form>
-                  ) : null}
-
-                  {latest.status === 'live' ? (
-                    <form action={endSession}>
-                      <input type="hidden" name="session_id" value={latest.id} />
-                      <input type="hidden" name="revalidate" value={revalidate} />
-                      <Button data-testid="session-end" type="submit" variant="secondary">
-                        End session
-                      </Button>
-                    </form>
-                  ) : null}
-
-                  {canCreate ? (
-                    <form action={createScheduledSession}>
-                      <input type="hidden" name="room_id" value={room.id} />
-                      <input type="hidden" name="revalidate" value={revalidate} />
-                      <Button data-testid="session-create" type="submit" variant="outline">
-                        Create scheduled session
-                      </Button>
-                    </form>
-                  ) : null}
-                </div>
+        ) : (
+          <>
+            {/* Mobile / narrow layouts: queue first */}
+            <div className="flex flex-col gap-4 lg:hidden">
+              {live ? (
+                <PanelErrorBoundary title="Queue error">
+                  <QuestionQueueClient />
+                </PanelErrorBoundary>
               ) : (
-                <div className="text-slate-500">
-                  Moderation controls are available to moderators and staff.
+                <div className="rounded-lg border p-6 text-sm text-muted-foreground">
+                  No live session right now.
                 </div>
               )}
 
-              {canModerate && publicRecapSlug ? (
-                <div className="pt-3 space-y-2">
-                  <form action={publishRecap} className="flex flex-wrap gap-2">
-                    <input type="hidden" name="session_id" value={latest.id} />
-                    <input type="hidden" name="figure_slug" value={pf.slug} />
-                    <input type="hidden" name="room_slug" value={roomSlug} />
-                    <input type="hidden" name="public_figure_name" value={pf.name} />
-                    <input type="hidden" name="room_title" value={room.title} />
-                    <input type="hidden" name="revalidate" value={revalidate} />
-                    <input
-                      type="hidden"
-                      id="public-recap-summary"
-                      name="summary"
-                      value=""
-                      aria-hidden="true"
-                    />
-                    <Button type="submit" variant="outline" size="sm">
-                      Publish recap
-                    </Button>
-                  </form>
+              <PanelErrorBoundary title="Recap panel error">
+                <RecapPanel sessionId={session.id} revalidate={revalidate} />
+              </PanelErrorBoundary>
 
-                  <div className="text-xs text-slate-500">
-                    Public URL:
-                    <div className="font-mono">/recaps/{publicRecapSlug}</div>
-                    <div className="text-slate-400">Unpublished recaps return 404.</div>
-                  </div>
-
-                  <form action={unpublishRecap} className="flex flex-wrap gap-2">
-                    <input type="hidden" name="session_id" value={latest.id} />
-                    <input type="hidden" name="slug" value={publicRecapSlug} />
-                    <input type="hidden" name="revalidate" value={revalidate} />
-                    <Button type="submit" variant="ghost" size="sm">
-                      Unpublish recap
-                    </Button>
-                  </form>
-
-                  <div data-testid="session-id" className="hidden">
-                    {latest.id}
-                  </div>
-                </div>
-              ) : null}
-
-              {/* Optional: surface constraint errors in Phase 2 by adding error boundaries or redirect with toast */}
-            </>
-          ) : (
-            <EmptyState
-              icon={<CalendarClock className="h-6 w-6 text-slate-400" aria-hidden />}
-              title="No sessions scheduled yet"
-              description="This room hasn’t recorded any sessions, so the queue, transcript, and recap panels stay empty. Schedule a session to unlock them."
-              action={
-                canCreate ? (
-                  <form action={createScheduledSession} className="w-full">
-                    <input type="hidden" name="room_id" value={room.id} />
-                    <input type="hidden" name="revalidate" value={revalidate} />
-                    <Button className="w-full" type="submit">
-                      Create scheduled session
-                    </Button>
-                  </form>
-                ) : (
-                  <p className="text-xs text-slate-500">
-                    Moderators and staff can schedule sessions for this room.
-                  </p>
-                )
-              }
-              className="rounded-none border-none bg-transparent p-0 shadow-none text-left"
-            />
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Questions</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-slate-600">
-          {live ? (
-            <ClientErrorBoundary
-              fallbackRender={({ error, reset }) => (
-                <ErrorState
-                  title="Realtime queue error"
-                  message={error.message}
-                  retryLabel="Retry"
-                  onRetry={reset}
-                  className="w-full"
-                />
-              )}
-            >
-              <QuestionQueueClient
-                sessionId={live.id}
-                activeSessionId={activeSessionId}
-                role={role}
-              />
-            </ClientErrorBoundary>
-          ) : (
-            <div className="text-slate-500">
-              No live session. Questions open when the session is live.
+              <PanelErrorBoundary title="Transcript panel error">
+                <TranscriptPanel sessionId={session.id} revalidate={revalidate} />
+              </PanelErrorBoundary>
             </div>
-          )}
-        </CardContent>
-      </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">All sessions</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-slate-600">
-          {list.length ? (
-            <ul className="space-y-2">
-              {list.map((s) => (
-                <li key={s.id} className="rounded-md border border-slate-200 bg-white p-3">
-                  <div className="flex items-center gap-2">
-                    <Badge>{s.status}</Badge>
-                    <span className="text-slate-500">created {fmt(s.created_at)}</span>
+            {/* Desktop layouts: left queue, right panels */}
+            <div className="hidden flex-1 gap-4 lg:flex">
+              <div className="w-[420px] shrink-0">
+                {live ? (
+                  <PanelErrorBoundary title="Queue error">
+                    <QuestionQueueClient />
+                  </PanelErrorBoundary>
+                ) : (
+                  <div className="rounded-lg border p-6 text-sm text-muted-foreground">
+                    No live session right now.
                   </div>
-                  <div>
-                    Starts: <span className="font-semibold text-slate-900">{fmt(s.starts_at)}</span>
-                  </div>
-                  <div>
-                    Ends: <span className="font-semibold text-slate-900">{fmt(s.ends_at)}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="text-slate-500">No session history yet.</div>
-          )}
-        </CardContent>
-      </Card>
+                )}
+              </div>
 
-      {canModerate && latest ? (
-        <div className="space-y-4">
-          <AssetUploadPanel sessionId={latest.id} revalidatePath={revalidate} />
-          {recapError ? (
-            <Alert variant="error">
-              <AlertTitle>Recap data error</AlertTitle>
-              <AlertDescription>{recapError}</AlertDescription>
-            </Alert>
-          ) : null}
-          <ClientErrorBoundary
-            fallbackRender={({ error, reset }) => (
-              <ErrorState
-                title="Recap panel error"
-                message={error.message}
-                retryLabel="Retry"
-                onRetry={reset}
-                className="w-full"
-              />
-            )}
-          >
-            <RecapPanel
-              key={`${latest.id}-${recaps[0]?.id ?? 'none'}`}
-              sessionId={latest.id}
-              revalidatePath={revalidate}
-              recaps={recaps}
-              featureFlags={featureFlags}
-            />
-          </ClientErrorBoundary>
-          <ClientErrorBoundary
-            fallbackRender={({ error, reset }) => (
-              <ErrorState
-                title="Transcript panel error"
-                message={error.message}
-                retryLabel="Retry"
-                onRetry={reset}
-                className="w-full"
-              />
-            )}
-          >
-            <TranscriptPanel sessionId={latest.id} revalidate={revalidate} />
-          </ClientErrorBoundary>
-        </div>
-      ) : null}
+              <div className="flex flex-1 flex-col gap-4">
+                <PanelErrorBoundary title="Recap panel error">
+                  <RecapPanel sessionId={session.id} revalidate={revalidate} />
+                </PanelErrorBoundary>
+
+                <PanelErrorBoundary title="Transcript panel error">
+                  <TranscriptPanel sessionId={session.id} revalidate={revalidate} />
+                </PanelErrorBoundary>
+
+                <PanelErrorBoundary title="Realtime queue error">
+                  <ModeratorQueuePanel sessionId={session.id} />
+                </PanelErrorBoundary>
+              </div>
+            </div>
+          </>
+        )}
+      </main>
     </div>
   );
 }

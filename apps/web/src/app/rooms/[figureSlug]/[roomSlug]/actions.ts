@@ -12,7 +12,11 @@ import { supabaseServer } from '@/lib/supabase/server';
 import { AiRecapProvider, AiRecapProviderSchema, Recap, RecapSchema } from '@onrecord/shared';
 import { toastKeys } from '@/lib/toast-keys';
 
-function buildRedirectUrl(path: string, toastValue: string, extras: Record<string, string | null> = {}) {
+function buildRedirectUrl(
+  path: string,
+  toastValue: string,
+  extras: Record<string, string | null> = {},
+) {
   const [base, query] = path.split('?');
   const params = new URLSearchParams(query ?? '');
   params.set('toast', toastValue);
@@ -24,7 +28,11 @@ function buildRedirectUrl(path: string, toastValue: string, extras: Record<strin
   return `${base}?${params.toString()}`;
 }
 
-function redirectWithToast(path: string, toastValue: string, extras: Record<string, string | null> = {}) {
+function redirectWithToast(
+  path: string,
+  toastValue: string,
+  extras: Record<string, string | null> = {},
+) {
   redirect(buildRedirectUrl(path, toastValue, extras));
 }
 

@@ -1,10 +1,40 @@
-import { expect, test, type TestInfo } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+
+async function disableWebSpeech(page: any) {
+  await page.addInitScript(() => {
+    const w = window as any;
+
+    // Make Web Speech "unsupported" deterministically
+    try {
+      delete w.SpeechRecognition;
+    } catch {}
+    try {
+      delete w.webkitSpeechRecognition;
+    } catch {}
+
+    w.SpeechRecognition = undefined;
+    w.webkitSpeechRecognition = undefined;
+  });
+}
+
+function waitForServerActionRequest(page: any) {
+  // Next Server Action requests include the `next-action` header
+  // (header keys are lowercase in Playwright’s req.headers()).
+  return page.waitForRequest((req: any) => {
+    const h = req.headers();
+    return req.method() === 'POST' && Boolean(h['next-action']);
+  });
+}
 
 test.describe('voice input fixture', () => {
   test('displays fallback banner when Web Speech API is absent', async ({ page }, testInfo) => {
     console.info(`[e2e] Starting ${testInfo.title}`);
+
+    await disableWebSpeech(page);
     await page.goto('/dev/audio-input');
+
     await expect(page.getByTestId('voice-input-fallback')).toBeVisible();
+
     console.info(`[e2e] Completed ${testInfo.title}`);
   });
 
@@ -13,27 +43,18 @@ test.describe('voice input fixture', () => {
   }, testInfo) => {
     console.info(`[e2e] Starting ${testInfo.title}`);
 
-    let saveRequested = false;
-    let processRequested = false;
-
-    await page.route('**/_actions/saveTranscript', async (route) => {
-      saveRequested = true;
-      await route.fulfill({ status: 200, body: 'ok' });
-    });
-
-    await page.route('**/_actions/processTranscript', async (route) => {
-      processRequested = true;
-      await route.fulfill({ status: 200, body: 'ok' });
-    });
-
     await page.goto('/dev/audio-input');
 
     await page.getByTestId('transcript-textarea').fill('Playwright transcript test.');
-    await page.getByTestId('save-transcript-button').click();
-    await expect.poll(() => saveRequested).toBeTruthy();
 
+    const saveReq = waitForServerActionRequest(page);
+    await page.getByTestId('save-transcript-button').click();
+    await saveReq;
+
+    const processReq = waitForServerActionRequest(page);
     await page.getByTestId('process-transcript-button').click();
-    await expect.poll(() => processRequested).toBeTruthy();
+    await processReq;
+
     console.info(`[e2e] Completed ${testInfo.title}`);
   });
 });

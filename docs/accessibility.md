@@ -6,7 +6,7 @@
 
 ## Patterns we follow
 
-- **ARIA Authoring Practices for dialogs** ensure modals trap focus, announce their role/name, and restore focus to the trigger (see `DialogContent`/`DialogTrigger` in `@/components/ui/dialog`).  
+- **ARIA Authoring Practices for dialogs** ensure modals trap focus, announce their role/name, and restore focus to the trigger (see `DialogContent`/`DialogTrigger` in `@/components/ui/dialog`).
 - **Keyboard interaction discipline** keeps focus visible, allows Tab/Shift+Tab navigation, and avoids mouse-only affordances.
 - **Error messaging protocols** use inline alert regions (`role="alert"` + `aria-live="assertive"`) when forms fail so assistive tech and keyboard-only reviewers hear the same story as sighted users.
 

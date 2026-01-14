@@ -1,184 +1,132 @@
+'use client';
+
+import { cva, type VariantProps } from 'class-variance-authority';
 import * as React from 'react';
-import { cva } from 'class-variance-authority';
 
-import { cn } from '@/lib/utils';
-
-type TableSize = 'default' | 'dense';
+import { cn } from '@/lib/cn';
 
 type TableContextValue = {
-  size: TableSize;
-  stickyHeader: boolean;
+  size: 'sm' | 'md' | 'lg';
 };
 
 const defaultTableContext: TableContextValue = {
-  size: 'default',
-  stickyHeader: false,
+  size: 'md',
 };
 
 const TableContext = React.createContext<TableContextValue>(defaultTableContext);
 
 const tableBase = cva('w-full text-sm', {
   variants: {
-    variant: {
-      default: 'border-separate border-spacing-0',
-    },
-  },
-});
-
-const tableRowVariants = cva('border-b border-slate-100 transition-colors', {
-  variants: {
-    hover: {
-      true: 'hover:bg-slate-50/60',
-      false: '',
-    },
-    selected: {
-      true: 'bg-slate-100/80',
-      false: '',
-    },
-  },
-  defaultVariants: {
-    hover: true,
-  },
-});
-
-const cellPadding = cva('first:pl-0 last:pr-0', {
-  variants: {
     size: {
-      default: 'px-4 py-3',
-      dense: 'px-3 py-2',
+      sm: 'text-xs',
+      md: 'text-sm',
+      lg: 'text-base',
     },
   },
   defaultVariants: {
-    size: 'default',
+    size: 'md',
   },
 });
 
-type TableProps = React.TableHTMLAttributes<HTMLTableElement> & {
-  size?: TableSize;
-  stickyHeader?: boolean;
-};
+type TableProps = React.HTMLAttributes<HTMLTableElement> &
+  VariantProps<typeof tableBase> & {
+    containerClassName?: string;
+  };
 
-const Table = React.forwardRef<HTMLTableElement, TableProps>(function Table(
-  { className, size = 'default', stickyHeader = false, ...props },
-  ref,
-) {
+export function Table({
+  className,
+  containerClassName,
+  size,
+  ...props
+}: TableProps) {
   return (
-    <TableContext.Provider value={{ size, stickyHeader }}>
-      <table ref={ref} className={cn(tableBase(), className)} {...props} />
+    <TableContext.Provider value={{ size: size ?? 'md' }}>
+      <div className={cn('w-full overflow-auto', containerClassName)}>
+        <table className={cn(tableBase({ size }), className)} {...props} />
+      </div>
     </TableContext.Provider>
   );
-});
+}
 
-const TableHeader = React.forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(
-  function TableHeader({ className, ...props }, ref) {
-    return (
-      <thead
-        ref={ref}
-        className={cn('bg-slate-50 text-xs uppercase tracking-wide text-slate-500', className)}
-        {...props}
-      />
-    );
-  },
-);
+export function TableHeader({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLTableSectionElement>) {
+  return <thead className={cn('border-b', className)} {...props} />;
+}
 
-const TableBody = React.forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(
-  function TableBody({ className, ...props }, ref) {
-    return <tbody ref={ref} className={cn('bg-white', className)} {...props} />;
-  },
-);
+export function TableBody({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLTableSectionElement>) {
+  return <tbody className={cn('[&_tr:last-child]:border-0', className)} {...props} />;
+}
 
-const TableFooter = React.forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(
-  function TableFooter({ className, ...props }, ref) {
-    return <tfoot ref={ref} className={cn('bg-slate-50 text-xs text-slate-500', className)} {...props} />;
-  },
-);
+export function TableFooter({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLTableSectionElement>) {
+  return (
+    <tfoot className={cn('border-t bg-muted/50 font-medium [&>tr]:last:border-b-0', className)} {...props} />
+  );
+}
 
-const TableCaption = React.forwardRef<HTMLTableCaptionElement, React.HTMLAttributes<HTMLTableCaptionElement>>(
-  function TableCaption({ className, ...props }, ref) {
-    return (
-      <caption ref={ref} className={cn('mt-2 text-xs text-slate-500', className)} {...props} />
-    );
-  },
-);
-
-type TableRowProps = React.ComponentProps<'tr'> & {
-  hover?: boolean;
-  selected?: boolean;
-};
-
-const TableRow = React.forwardRef<HTMLTableRowElement, TableRowProps>(function TableRow(
-  { className, hover, selected, ...props },
-  ref,
-) {
+export function TableRow({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLTableRowElement>) {
   return (
     <tr
-      ref={ref}
-      className={cn(tableRowVariants({ hover, selected }), className)}
-      data-selected={selected ? 'true' : undefined}
+      className={cn(
+        'border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted',
+        className,
+      )}
       {...props}
     />
   );
-});
+}
 
-type TableHeadCellProps = React.ComponentProps<'th'> & {
-  size?: TableSize;
-  sticky?: boolean;
-};
-
-const TableHeadCell = React.forwardRef<HTMLTableCellElement, TableHeadCellProps>(function TableHeadCell(
-  { className, size, sticky, ...props },
-  ref,
-) {
-  const context = React.useContext(TableContext);
-  const cellSize = size ?? context.size;
-  const isSticky = sticky ?? context.stickyHeader;
+export function TableHead({
+  className,
+  ...props
+}: React.ThHTMLAttributes<HTMLTableCellElement>) {
+  const ctx = React.useContext(TableContext);
 
   return (
     <th
-      ref={ref}
-      scope="col"
       className={cn(
-        'text-left text-xs font-semibold uppercase tracking-wide text-slate-600',
-        cellPadding({ size: cellSize }),
-        isSticky && 'sticky top-0 z-20 bg-slate-50/95 backdrop-blur',
+        'h-10 px-2 text-left align-middle font-medium text-muted-foreground',
+        ctx.size === 'sm' && 'h-8 px-2',
+        ctx.size === 'lg' && 'h-12 px-3',
         className,
       )}
       {...props}
     />
   );
-});
+}
 
-type TableCellProps = React.ComponentProps<'td'> & {
-  size?: TableSize;
-};
-
-const TableCell = React.forwardRef<HTMLTableCellElement, TableCellProps>(function TableCell(
-  { className, size, ...props },
-  ref,
-) {
-  const context = React.useContext(TableContext);
+export function TableCell({
+  className,
+  ...props
+}: React.TdHTMLAttributes<HTMLTableCellElement>) {
+  const ctx = React.useContext(TableContext);
 
   return (
     <td
-      ref={ref}
       className={cn(
-        'text-sm text-slate-700',
-        cellPadding({ size: size ?? context.size }),
+        'p-2 align-middle [&:has([role=checkbox])]:pr-0',
+        ctx.size === 'sm' && 'p-2',
+        ctx.size === 'lg' && 'p-3',
         className,
       )}
       {...props}
     />
   );
-});
+}
 
-export {
-  Table,
-  TableHeader,
-  TableBody,
-  TableFooter,
-  TableCaption,
-  TableRow,
-  TableHeadCell,
-  TableCell,
-  type TableSize,
-};
+export function TableCaption({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLTableCaptionElement>) {
+  return <caption className={cn('mt-4 text-sm text-muted-foreground', className)} {...props} />;
+}

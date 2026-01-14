@@ -35,9 +35,7 @@ export function ErrorState({
       <h3 className="text-xl font-semibold text-slate-900">{title}</h3>
       <p className="text-sm text-slate-600">{message}</p>
       <div className="flex flex-wrap items-center justify-center gap-3">
-        {onRetry ? (
-          <Button onClick={onRetry}>{retryLabel}</Button>
-        ) : null}
+        {onRetry ? <Button onClick={onRetry}>{retryLabel}</Button> : null}
         <Link
           href={homeHref}
           className="text-sm font-semibold text-primary underline-offset-2 hover:underline"

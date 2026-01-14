@@ -57,10 +57,7 @@ const DialogFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLD
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn(
-        'flex flex-wrap items-center justify-end gap-2 pt-2',
-        className,
-      )}
+      className={cn('flex flex-wrap items-center justify-end gap-2 pt-2', className)}
       {...props}
     />
   ),
@@ -80,15 +77,16 @@ const DialogTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HT
 
 DialogTitle.displayName = 'DialogTitle';
 
-const DialogDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
-  ({ className, ...props }, ref) => (
-    <DialogPrimitive.Description
-      ref={ref}
-      className={cn('text-sm text-slate-500', className)}
-      {...props}
-    />
-  ),
-);
+const DialogDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Description
+    ref={ref}
+    className={cn('text-sm text-slate-500', className)}
+    {...props}
+  />
+));
 
 DialogDescription.displayName = 'DialogDescription';
 

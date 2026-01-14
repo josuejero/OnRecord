@@ -1,6 +1,14 @@
 import { Skeleton } from '@/components/ui/skeleton';
 
-const headers = ['Room', 'Session', 'Answered', 'Rejected', 'Rejection rate', 'Avg time', 'Top terms'];
+const headers = [
+  'Room',
+  'Session',
+  'Answered',
+  'Rejected',
+  'Rejection rate',
+  'Avg time',
+  'Top terms',
+];
 const rows = Array.from({ length: 5 }, (_, index) => index);
 
 export default function InsightsLoading() {
@@ -19,10 +27,7 @@ export default function InsightsLoading() {
         </div>
         <div className="space-y-4 px-4 py-6">
           {rows.map((row) => (
-            <div
-              key={row}
-              className="grid grid-cols-1 gap-4 text-sm text-slate-600 sm:grid-cols-7"
-            >
+            <div key={row} className="grid grid-cols-1 gap-4 text-sm text-slate-600 sm:grid-cols-7">
               {headers.map((label) => (
                 <Skeleton key={`${row}-${label}`} className="h-4 w-full rounded-md" />
               ))}

@@ -2,10 +2,7 @@ module.exports = {
   ci: {
     collect: {
       startServerCommand: 'pnpm --filter @onrecord/web dev --hostname 0.0.0.0 --port 3000',
-      url: [
-        'http://127.0.0.1:3000',
-        'http://127.0.0.1:3000/rooms/demo-figure/demo-room',
-      ],
+      url: ['http://127.0.0.1:3000', 'http://127.0.0.1:3000/rooms/demo-figure/demo-room'],
       numberOfRuns: 1,
       settings: {
         emulatedFormFactor: 'desktop',

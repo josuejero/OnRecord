@@ -1,16 +1,16 @@
 import { uploadAsset } from './actions';
-import { Button } from '@/components/ui/button';
 
-export function AssetUploadPanel(props: { sessionId: string; revalidatePath: string }) {
+export function AssetUploadPanel(props: {
+  sessionId: string;
+  revalidatePath: string;
+}) {
   return (
-    <section className="mt-8 rounded-xl border p-4">
-      <h2 className="text-lg font-semibold">Assets</h2>
+    <div>
       <p className="text-sm text-muted-foreground">
-        Upload a file as a public recap asset (visible on the public recap page) or a private
-        session asset.
+        Upload an image or document to attach to this session.
       </p>
 
-      <form className="mt-4 flex flex-col gap-3" action={uploadAsset} encType="multipart/form-data">
+      <form className="mt-4 flex flex-col gap-3" action={uploadAsset}>
         <input type="hidden" name="session_id" value={props.sessionId} />
         <input type="hidden" name="revalidate_path" value={props.revalidatePath} />
 
@@ -18,23 +18,27 @@ export function AssetUploadPanel(props: { sessionId: string; revalidatePath: str
         <select
           name="visibility"
           defaultValue="public"
-          className="h-10 rounded-md border bg-background px-3 text-sm"
-          data-testid="asset-visibility"
+          className="rounded-md border bg-background px-3 py-2 text-sm"
         >
-          <option value="public">Public recap asset</option>
-          <option value="private">Private session asset</option>
+          <option value="public">Public</option>
+          <option value="private">Private</option>
         </select>
 
         <label className="text-sm font-medium">File</label>
-        <input type="file" name="file" required className="text-sm" data-testid="asset-file" />
+        <input
+          name="file"
+          type="file"
+          className="rounded-md border bg-background px-3 py-2 text-sm"
+          required
+        />
 
-        <div className="flex items-center gap-2">
-          <Button type="submit" data-testid="asset-submit">
-            Upload
-          </Button>
-          <p className="text-xs text-muted-foreground">Recommended: images, PDF, text. Max 25MB.</p>
-        </div>
+        <button
+          type="submit"
+          className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
+        >
+          Upload
+        </button>
       </form>
-    </section>
+    </div>
   );
 }

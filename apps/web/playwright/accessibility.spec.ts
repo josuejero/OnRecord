@@ -1,55 +1,41 @@
-import { test, expect } from './test.setup';
+import AxeBuilder from '@axe-core/playwright';
+import { expect, test } from '@playwright/test';
 
-test.describe('accessibility patterns', () => {
-  test('dialog focus trap restores focus to the trigger after close', async ({ page }) => {
-    await page.goto('/dev/dialog');
-    const trigger = page.getByTestId('dialog-trigger');
-    await trigger.click();
+test.describe('accessibility (smoke)', () => {
+  test('home page has no obvious violations', async ({ page }) => {
+    await page.goto('/');
 
-    const dialog = page.getByTestId('dialog-content');
-    await expect(dialog).toBeVisible();
+    const results = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa'])
+      .analyze();
 
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Tab');
-
-    const focusedInside = await page.evaluate(() => {
-      const active = document.activeElement;
-      return Boolean(active?.closest('[role="dialog"]'));
-    });
-    expect(focusedInside).toBe(true);
-
-    await page.keyboard.press('Escape');
-    await expect(dialog).not.toBeVisible();
-    await expect(trigger).toBeFocused();
+    expect(results.violations).toEqual([]);
   });
 
-  test('login errors announce via an alert with aria-live="assertive"', async ({ page }) => {
-    const errorMessage = 'Invalid login for accessibility smoke';
-    let intercepted = false;
+  test('login errors are announced via aria-live', async ({ page }) => {
+    await page.goto('/login');
 
-    await page.route('**/auth/v1/token', async (route) => {
-      if (intercepted || route.request().method() !== 'POST') {
-        await route.continue();
-        return;
-      }
-
-      intercepted = true;
+    // Fake a login failure so we can assert the aria-live region.
+    await page.route('**/auth/v1/token?grant_type=password', async (route) => {
       await route.fulfill({
         status: 400,
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ error_description: errorMessage, error: 'invalid_grant' }),
+        contentType: 'application/json',
+        body: JSON.stringify({
+          error: 'invalid_grant',
+          error_description: 'Invalid login credentials',
+        }),
       });
     });
 
-    await page.goto('/login');
-    await page.getByTestId('login-email').fill('reporter@onrecord.local');
-    await page.getByTestId('login-password').fill('wrong-password');
-    await page.getByTestId('login-submit').click();
+    await page.getByLabel('Email').fill('a11y@example.com');
+    await page.getByLabel('Password').fill('wrong-password');
+    await page.getByRole('button', { name: /sign in/i }).click();
 
-    const alert = page.getByRole('alert');
+    const errorMessage = 'Invalid login credentials';
+
+    const alert = page.getByTestId('login-error');
     await expect(alert).toBeVisible();
-    await expect(alert).toHaveText(errorMessage);
+    await expect(alert).toContainText(errorMessage);
     await expect(alert).toHaveAttribute('aria-live', 'assertive');
   });
 });

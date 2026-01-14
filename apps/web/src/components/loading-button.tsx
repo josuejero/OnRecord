@@ -25,7 +25,10 @@ export function LoadingButton({
     >
       <span
         aria-hidden={loading}
-        className={cn('flex items-center justify-center transition-opacity', loading ? 'opacity-0' : 'opacity-100')}
+        className={cn(
+          'flex items-center justify-center transition-opacity',
+          loading ? 'opacity-0' : 'opacity-100',
+        )}
       >
         {children}
       </span>

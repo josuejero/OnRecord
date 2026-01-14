@@ -3,30 +3,27 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 
-const skeletonVariants = cva(
-  'animate-pulse rounded-md bg-slate-200/70 dark:bg-slate-800/40',
-  {
-    variants: {
-      size: {
-        default: 'h-4',
-        text: 'h-3',
-        title: 'h-6',
-        avatar: 'h-10 w-10 rounded-full',
-        line: 'h-3',
-      },
-      width: {
-        default: 'w-full',
-        sm: 'w-24',
-        md: 'w-32',
-        lg: 'w-48',
-      },
+const skeletonVariants = cva('animate-pulse rounded-md bg-slate-200/70 dark:bg-slate-800/40', {
+  variants: {
+    size: {
+      default: 'h-4',
+      text: 'h-3',
+      title: 'h-6',
+      avatar: 'h-10 w-10 rounded-full',
+      line: 'h-3',
     },
-    defaultVariants: {
-      size: 'default',
-      width: 'default',
+    width: {
+      default: 'w-full',
+      sm: 'w-24',
+      md: 'w-32',
+      lg: 'w-48',
     },
   },
-);
+  defaultVariants: {
+    size: 'default',
+    width: 'default',
+  },
+});
 
 type SkeletonProps = React.HTMLAttributes<HTMLSpanElement> & VariantProps<typeof skeletonVariants>;
 
