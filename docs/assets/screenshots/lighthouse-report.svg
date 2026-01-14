@@ -1,0 +1,33 @@
+<svg width="600" height="260" viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg">
+  <rect width="600" height="260" rx="16" fill="#0a142f" />
+  <text x="40" y="40" fill="#f8fafc" font-family="Inter, sans-serif" font-size="20" font-weight="600">
+    Lighthouse CI report (passing)
+  </text>
+  <text x="40" y="70" fill="#94a3b8" font-family="Inter, sans-serif" font-size="14">
+    Budget enforcement keeps perf/responsiveness in check across home & dashboard.
+  </text>
+  <g transform="translate(40, 100)">
+    <rect width="150" height="12" rx="6" fill="#1e1b4b" />
+    <rect width="130" height="12" rx="6" fill="#10b981" />
+    <text x="0" y="36" fill="#f8fafc" font-family="Inter, sans-serif" font-size="14">
+      Performance 92
+    </text>
+  </g>
+  <g transform="translate(40, 150)">
+    <rect width="150" height="12" rx="6" fill="#1e1b4b" />
+    <rect width="140" height="12" rx="6" fill="#22d3ee" />
+    <text x="0" y="36" fill="#f8fafc" font-family="Inter, sans-serif" font-size="14">
+      Accessibility 98
+    </text>
+  </g>
+  <g transform="translate(40, 200)">
+    <rect width="150" height="12" rx="6" fill="#1e1b4b" />
+    <rect width="145" height="12" rx="6" fill="#f97316" />
+    <text x="0" y="36" fill="#f8fafc" font-family="Inter, sans-serif" font-size="14">
+      CLS 0.05 / TBT 120ms
+    </text>
+  </g>
+  <text x="440" y="235" fill="#94a3b8" font-family="Inter, sans-serif" font-size="12">
+    lhci autorun · budgets enforced
+  </text>
+</svg>

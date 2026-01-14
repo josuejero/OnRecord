@@ -1,104 +1,73 @@
 # OnRecord
 
-**Phase 8: GitHub presentation upgrades (make the polish obvious)**  
-OnRecord is a verified, person-centric press conference platform where accredited reporters join permanent rooms for a public figure, queue questions into a moderated flow, and walk away with on-record answers, transcripts, asset packages, and public recap pages.
+[![CI](https://github.com/josuejero/OnRecord/actions/workflows/ci.yml/badge.svg)](https://github.com/josuejero/OnRecord/actions/workflows/ci.yml) [![Lighthouse](https://img.shields.io/badge/Lighthouse-passing-brightgreen)](https://web.dev/measure) [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-- Accredited reporting flows stay live even when the demo is paused, so every moment is recruiter-ready.
-- Persistent rooms keep context for follow-up questions, recap publishing, and offline review.
-- Phase 8 highlights the polish that recruiters notice: consistent UI, failure safety nets, and a confidence-building demo experience.
+OnRecord is the recruiter-ready press conference interface: live room control, question queues, and recap assets all share a single responsive canvas so demos, remote interviews, or async reviews load like production — even when data is slow or missing.
 
-## Live Demo
+- Responsive, mobile-first panels stretch smoothly from phones to 4K dashboards so every recruiter sees the same polish.  
+- Cross-browser state fidelity keeps skeletons, cards, and dialogs consistent in Chromium, Safari, and Firefox.  
+- Accessibility-first interactions plus telemetry-backed debugging let UI interns trace failures, keep assistive markup intact, and ship with confidence.
 
-The live demo shows the full recruitment narrative: a room loading smoothly, a transcript flowing in real time, and a recap toast confirming the publish. Watch for the reporter queue, Recap published toast, and the public recap link inside the room.
+## Start here
 
-- **Press flow:** moderators approve questions, reporters tag answers, and the recap timeline keeps everyone aligned.
-- **Assets at a glance:** transcripts, recordings, and citation-ready details ship with every session.
-- **Validation:** E2E smoke tests ensure the same journey runs locally before it hits GitHub.
+- Overview + latest demo cues: `README.md` hero, Quickstart, and “Demo sprint.”
+- Runbook + evidence hub: `docs/start-here.md` routes you to the fastest UI proof.
+- Always use `.env.example` as the Safe Defaults template; do not commit any real secrets.
 
-![Room page with toast "Recap published"](docs/assets/screenshots/room-page-toast.png)
+## Quickstart
 
-## UI Polish Pack
-
-Recruiter-facing UI polish means every panel loads with intent: skeleton placeholders, consistent empty states, friendly error boundaries, and global toasts keep the experience calm even when data is slow or absent.
-
-- **Skeletons:** Next.js `loading.tsx` and shared `ui/skeleton.tsx` shapes reserve space for tables, headers, and cards so the layout never jumps (shown below).  
-- **Empty states:** `EmptyState` standardizes iconography, copy, and CTAs whenever a list is empty, so the tone stays confident.
-- **Error boundaries:** `ErrorState` plus `ClientErrorBoundary` means we can show a retry path without crashing the rest of the screen.  
-- **Toasts:** Sonner-powered global toasts surface confirmations like "Recap published" or "Question queued" without threading callbacks through every component.
-
-![Rooms loading skeleton](docs/assets/screenshots/rooms-loading-skeleton.png)
-
-## UI Reliability
-
-Read the full proof in [docs/ui-reliability.md](docs/ui-reliability.md) — every detectable failure mode has telemetry, a defined recovery, and a regression test.
-
-![Error boundary page with friendly retry UI](docs/assets/screenshots/error-boundary.png)
-
-Handled failure modes (six recruiter-visible guarantees):
-
-- **Offline / flaky networking:** banner warns "You're offline," queue actions stay enabled, and buttons re-enable when connectivity returns.  
-- **Auth expiry:** the session-expired toast stays visible with a "Go to login" CTA until the reporter re-authenticates.  
-- **Real-time disconnects:** the question queue chip cycles through "Live," "Reconnecting...," and "Disconnected," and a manual "Reconnect" button is ready when retries run out.  
-- **Slow queries / cold starts:** skeletons and "Still working..." copy keep the layout steady until data arrives.  
-- **Permission / role issues:** `/whoami` explains identity + access, guarded routes show a clear fallback, and QA scripts prove the guard reacts correctly.  
-- **Unhandled JS errors:** `ClientErrorBoundary` renders `ErrorState` with retry + home links so recruiters always get a friendly recovery screen.
-
-## Component Mini-Library
-
-Polish is enforced through shared primitives; see [docs/components.md](docs/components.md) for the implementation details.
-
-- **Skeletons (`ui/skeleton.tsx`):** shape variants and utilities mirror every major panel while data resolves.  
-- **Table (`ui/table.tsx`):** semantic markup, optional sticky headers, dense spacing, and hover/selected states keep grids consistent.  
-- **Dialog (`ui/dialog.tsx`):** Radix-powered overlays ship focus trapping, ESC/Click-to-close, and accessible title/description pairs.  
-- **Alert (`ui/alert.tsx`):** inline alerts add `role="alert"` and `aria-live` for error, warning, and success tones.  
-- **EmptyState (`components/empty-state.tsx`):** icon + copy + optional action slot unify every "no data" message.  
-- **ErrorState (`components/error-state.tsx`):** retry + "Go home" buttons are wired once so every boundary looks the same.  
-- **LoadingButton (`components/loading-button.tsx`):** spinner, width lock, and `loadingText` keep async actions predictable.  
-- **ClientErrorBoundary (`components/client-error-boundary.tsx`):** wraps risky panels (question queue, etc.) and reprises `ErrorState` with retry hooks plus telemetry.
-
-## Quality Gates
-
-We gate every push with linting, types, Playwright regressions, and Axe accessibility checks.
-
-- `pnpm lint` (eslint) protects formatting and DX rules.  
-- `pnpm typecheck` (tsc) runs across the workspace.  
-- `pnpm --filter @onrecord/web test:e2e` drives the Playwright suite (`polish.spec.ts` and friends).  
-- Axe a11y (`apps/web/playwright/a11y.spec.ts` with `@axe-core/playwright`) catches serious/critical violations as part of the Playwright run.
-
-## Run locally
-
-### 1) Install
+Copy the following shell block into your terminal to stand up the full local stack, then edit `apps/web/.env.local` (or a root `.env.local`) with the `NEXT_PUBLIC_SUPABASE_*` values that Supabase prints and your service role key.
 
 ```bash
 pnpm install
-```
-
-### 2) Start Supabase
-
-```bash
 pnpm supabase:start
 pnpm supabase:reset
-```
-
-Copy the anon key from the Supabase output into `apps/web/.env.local` (or a root `.env.local` if you prefer) using `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `NEXT_PUBLIC_SUPABASE_URL` from the `.env.example` file.
-
-### 3) Start the web app
-
-```bash
+export SUPABASE_URL=http://127.0.0.1:54321
+export SUPABASE_SERVICE_ROLE_KEY=YOUR_LOCAL_SERVICE_ROLE_KEY
+pnpm --filter @onrecord/web exec node scripts/seed-users.mjs
+pnpm --filter @onrecord/web exec node scripts/seed-demo-data.mjs
 pnpm dev
 ```
 
-### 4) Run quality gates
+## Demo sprint
 
-```bash
-pnpm lint
-pnpm typecheck
-pnpm e2e
-```
+Run `pnpm demo` and the script will start Supabase, reset + seed the demo room data, persist the necessary `NEXT_PUBLIC_SUPABASE_*` values into `apps/web/.env.local`, and finally launch `pnpm --filter @onrecord/web dev` while printing the credentials and URLs you need.
 
-## Docs
+### Demo accounts
 
-- Phase 8 rationale: `docs/architecture.md`, `docs/demo-script.md`  
-- Reliability and UI polish: `docs/ui-reliability.md`, `docs/components.md`  
-- APIs and commitments: `docs/api/openapi.yaml`, `docs/threat-model.md`, `docs/test-matrix.md`  
-- Extra reference: `docs/adr/`, `docs/privacy.md`, `docs/reviewers.md`
+- Reporter: `reporter@onrecord.local` / `password123!`  
+- Moderator: `moderator@onrecord.local` / `password123!`
+
+### What to click
+
+- Open the first “Press Room” card from `/rooms`, then hit **Start session** to warm the queue/live session UI.  
+- Ask a question, approve it, and publish a recap to watch the toast + recap timeline surfaces.  
+- Open the public recap link inside the room to verify the published assets + transcript.
+
+### How to reset
+
+- `pnpm supabase:reset && pnpm seed:users` (or just re-run `pnpm demo`) to refresh the seeded accounts + data.
+
+## Visual proof
+
+![Room page with toast "Recap published"](docs/assets/screenshots/room-page-toast.png)  
+Real-time recap flows show the transcript, toast, and recap link that recruiters care about.
+
+![Rooms loading skeleton](docs/assets/screenshots/rooms-loading-skeleton.png)  
+Responsive skeletons preserve layout across breakpoints while guard rails wait on data.
+
+![Error boundary page with friendly retry UI](docs/assets/screenshots/error-boundary.png)  
+Error boundaries, empty states, and retry affordances keep every panel recruiter-ready.
+
+## Performance proof
+
+![Lighthouse CI report (passing)](docs/assets/screenshots/lighthouse-report.svg)  
+`pnpm lhci` runs Lighthouse CI (home + demo room) and enforces the `.lighthouseci/ci-config.js` budgets so perf, accessibility, and layout shift won’t regress on PRs.
+
+## UI Internship Evidence
+
+- [docs/ui-contract.md](docs/ui-contract.md) — loading, empty, error, and success patterns that match the UI intern checklist.  
+- [docs/ui-reliability.md](docs/ui-reliability.md) — documented failure modes plus recovery flows and telemetry.  
+- [docs/components.md](docs/components.md) — shared primitives that keep the form, table, and dialog UX cohesive.  
+- [docs/test-matrix.md](docs/test-matrix.md) — automated coverage across lint, types, Playwright, and Axe checks.
+- [docs/accessibility.md](docs/accessibility.md) — accessible standards, ARIA dialog/keyboard patterns, and Axe + keyboard smoke proof.

@@ -25,6 +25,7 @@ If you believe you have found a security vulnerability:
 - Never commit `.env*` files.
 - Never expose `SERVICE_ROLE` keys to the browser.
 - Treat Supabase Storage private buckets as private by default.
+- Use `.env.example` as the canonical reference; never commit real secrets or `.env` overrides.
 
 ## Safe defaults
 

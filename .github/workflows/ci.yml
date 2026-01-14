@@ -87,11 +87,17 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm --filter @onrecord/web exec playwright install --with-deps
 
-      - name: Web Playwright suite
-        run: pnpm test:web:e2e
+      - name: Cross-browser smoke Playwright
+        run: pnpm --filter @onrecord/web test:e2e:smoke
+
+      - name: Web Playwright suite (Chromium)
+        run: pnpm test:web:e2e -- --project=chromium
 
       - name: Repo smoke e2e
         run: pnpm e2e
+
+      - name: Lighthouse CI budgets
+        run: pnpm lhci
 
       - name: Upload Playwright report
         if: always()

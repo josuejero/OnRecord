@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -62,9 +63,9 @@ export default function LoginPage() {
         </form>
 
         {error ? (
-          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <Alert data-testid="login-error" variant="error">
             {error}
-          </div>
+          </Alert>
         ) : null}
 
         <div className="text-xs text-slate-500 space-y-1">

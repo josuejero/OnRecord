@@ -17,8 +17,18 @@ This maps acceptance criteria to automated checks.
 
 ## Automated test inventory
 
+### Playwright browser/device matrix
+
+- `apps/web/playwright.config.ts` defines projects for Desktop Chrome, Desktop Firefox, Desktop Safari, Pixel 7, and iPhone 14 so the same suite can prove cross-browser and cross-device compatibility.
+- CI runs the shorter `polish.spec.ts` smoke slice via `pnpm --filter @onrecord/web test:e2e:smoke` across every project while the full Playwright suite targets Chromium only (`pnpm test:web:e2e -- --project=chromium`) for throughput.
+
+### Lighthouse budgets
+
+- `.lighthouseci/ci-config.js` drives `pnpm lhci` against the home and demo room routes in CI, asserting ≥90 performance/accessibility scores plus targets for LCP, TBT, and CLS so regressions break the build.
+
 ### Web Playwright (apps/web/playwright)
 
+- `accessibility.spec.ts`: keyboard-first checks that the dev dialog traps focus/returns it to the trigger and that login form errors land inside the `role="alert"`/`aria-live="assertive"` region.
 - `auth.spec.ts`: login and role behavior
 - `sessions.spec.ts`: session lifecycle
 - `questions.spec.ts`: submission + queue ordering
