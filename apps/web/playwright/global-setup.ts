@@ -1,95 +1,62 @@
+import type { FullConfig } from '@playwright/test';
 import { execSync } from 'node:child_process';
 import path from 'node:path';
 
-function parseEnvExports(output: string): Record<string, string> {
-  const env: Record<string, string> = {};
-
-  for (const rawLine of output.split(/\r?\n/)) {
-    const line = rawLine.trim();
-    if (!line) continue;
-
-    // Handles:
-    // - export KEY="VALUE"
-    // - export KEY=VALUE
-    // - KEY=VALUE
-    const exportPrefix = line.startsWith('export ') ? 'export ' : '';
-    const assignment = line.slice(exportPrefix.length);
-
-    const eqIdx = assignment.indexOf('=');
-    if (eqIdx === -1) continue;
-
-    const key = assignment.slice(0, eqIdx).trim();
-    let value = assignment.slice(eqIdx + 1).trim();
-
-    // Strip wrapping quotes if present
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1);
-    }
-
-    if (key) env[key] = value;
-  }
-
-  return env;
+function mustGetEnv(key: string) {
+  const v = process.env[key];
+  if (!v) throw new Error(`[playwright global-setup] Missing env var: ${key}`);
+  return v;
 }
 
-export default async function globalSetup() {
-  // If the user already exported these, leave them alone.
-  if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) return;
+export default async function globalSetup(config: FullConfig) {
+  // Ensure the web server can start under Playwright with the exact env vars it expects.
+  // (e2e config uses `pnpm --filter @onrecord/web dev ...`, so it reads apps/web/.env and process env)
+  // Map common Supabase env var names to the ones the app expects.
 
-  // apps/web/playwright -> repo root
-  const repoRoot = path.resolve(__dirname, '../../..');
+  const supabaseUrl =
+    process.env.SUPABASE_URL ??
+    process.env.NEXT_PUBLIC_SUPABASE_URL ??
+    process.env.API_URL;
 
-  let output = '';
+  const anonKey =
+    process.env.SUPABASE_ANON_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+    process.env.ANON_KEY;
+
+  const serviceRoleKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ??
+    process.env.SERVICE_ROLE_KEY;
+
+
+  if (!supabaseUrl || !anonKey || !serviceRoleKey) {
+    throw new Error(
+      [
+        '[playwright global-setup] Missing Supabase env vars for e2e.',
+        'Need SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL), SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY), and SUPABASE_SERVICE_ROLE_KEY.',
+      ].join('\n'),
+    );
+  }
+
+  process.env.NEXT_PUBLIC_SUPABASE_URL = supabaseUrl;
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = anonKey;
+  process.env.SUPABASE_SERVICE_ROLE_KEY = serviceRoleKey;
+
+  // Seed via existing script if present; otherwise noop.
+  // This keeps e2e deterministic and avoids tests waiting on missing sessions/figures.
+  const projectRoot = path.resolve(__dirname, '..');
   try {
-    output = execSync('pnpm exec supabase status -o env', {
-      cwd: repoRoot,
-      stdio: ['ignore', 'pipe', 'pipe'],
-      encoding: 'utf8',
+    execSync('pnpm -s run db:seed:e2e', {
+      cwd: projectRoot,
+      stdio: 'inherit',
+      env: process.env,
     });
-  } catch (err: any) {
-    const stderr = String(err?.stderr ?? '');
-    const message =
-      stderr.trim() ||
-      String(err?.message ?? 'Failed to run: pnpm exec supabase status -o env');
-
-    throw new Error(
-      [
-        'Playwright could not load Supabase env vars automatically.',
-        '',
-        'Make sure local Supabase is running and healthy, then retry:',
-        '  pnpm supabase:start',
-        '  pnpm exec supabase status',
-        '',
-        'Raw error:',
-        message,
-      ].join('\n'),
-    );
+  } catch {
+    // If no seed script exists, don't fail global setup.
+    // Individual tests should still seed via API/helpers.
   }
 
-  const parsed = parseEnvExports(output);
-
-  // Only set what isn't already set in the current shell.
-  for (const [key, value] of Object.entries(parsed)) {
-    if (!process.env[key]) process.env[key] = value;
-  }
-
-  const required = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
-  const missing = required.filter((k) => !process.env[k]);
-
-  if (missing.length) {
-    throw new Error(
-      [
-        `Missing required env var(s): ${missing.join(', ')}`,
-        '',
-        'Try:',
-        '  pnpm supabase:start',
-        '  pnpm exec supabase status -o env',
-        '',
-        'Then re-run the Playwright command.',
-      ].join('\n'),
-    );
-  }
+  // Smoke check for required env after mapping
+  mustGetEnv('NEXT_PUBLIC_SUPABASE_URL');
+  mustGetEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  mustGetEnv('SUPABASE_SERVICE_ROLE_KEY');
 }

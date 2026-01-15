@@ -6,11 +6,13 @@ import * as React from 'react';
 import { cn } from '@/lib/cn';
 
 type TableContextValue = {
-  size: 'sm' | 'md' | 'lg';
+  size: 'dense' | 'sm' | 'md' | 'lg';
+  stickyHeader: boolean;
 };
 
 const defaultTableContext: TableContextValue = {
   size: 'md',
+  stickyHeader: false,
 };
 
 const TableContext = React.createContext<TableContextValue>(defaultTableContext);
@@ -18,6 +20,7 @@ const TableContext = React.createContext<TableContextValue>(defaultTableContext)
 const tableBase = cva('w-full text-sm', {
   variants: {
     size: {
+      dense: 'text-[0.75rem]',
       sm: 'text-xs',
       md: 'text-sm',
       lg: 'text-base',
@@ -31,16 +34,18 @@ const tableBase = cva('w-full text-sm', {
 type TableProps = React.HTMLAttributes<HTMLTableElement> &
   VariantProps<typeof tableBase> & {
     containerClassName?: string;
+    stickyHeader?: boolean;
   };
 
 export function Table({
   className,
   containerClassName,
   size,
+  stickyHeader,
   ...props
 }: TableProps) {
   return (
-    <TableContext.Provider value={{ size: size ?? 'md' }}>
+    <TableContext.Provider value={{ size: size ?? 'md', stickyHeader: Boolean(stickyHeader) }}>
       <div className={cn('w-full overflow-auto', containerClassName)}>
         <table className={cn(tableBase({ size }), className)} {...props} />
       </div>
@@ -52,7 +57,18 @@ export function TableHeader({
   className,
   ...props
 }: React.HTMLAttributes<HTMLTableSectionElement>) {
-  return <thead className={cn('border-b', className)} {...props} />;
+  const ctx = React.useContext(TableContext);
+
+  return (
+    <thead
+      className={cn(
+        'border-b',
+        ctx.stickyHeader && 'sticky top-0 z-10 bg-white/95 shadow-sm shadow-white/50 backdrop-blur',
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 export function TableBody({
@@ -96,6 +112,7 @@ export function TableHead({
     <th
       className={cn(
         'h-10 px-2 text-left align-middle font-medium text-muted-foreground',
+        ctx.size === 'dense' && 'h-6 px-1',
         ctx.size === 'sm' && 'h-8 px-2',
         ctx.size === 'lg' && 'h-12 px-3',
         className,
@@ -115,6 +132,7 @@ export function TableCell({
     <td
       className={cn(
         'p-2 align-middle [&:has([role=checkbox])]:pr-0',
+        ctx.size === 'dense' && 'p-1',
         ctx.size === 'sm' && 'p-2',
         ctx.size === 'lg' && 'p-3',
         className,

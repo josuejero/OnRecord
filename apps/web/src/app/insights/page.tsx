@@ -1,17 +1,17 @@
-import Link from 'next/link';
+import { EmptyState } from '@/components/empty-state';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
   TableCell,
-  TableHeadCell,
+  TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
 import { requireRole } from '@/lib/auth/require';
 import { supabaseServer } from '@/lib/supabase/server';
-import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/empty-state';
 import { BarChart } from 'lucide-react';
+import Link from 'next/link';
 
 function fmtSeconds(v: number | null | undefined) {
   if (v === null || v === undefined) return '—';
@@ -88,13 +88,13 @@ export default async function InsightsPage() {
             <Table size="dense" stickyHeader>
               <TableHeader>
                 <TableRow>
-                  <TableHeadCell>Room</TableHeadCell>
-                  <TableHeadCell>Session</TableHeadCell>
-                  <TableHeadCell>Answered</TableHeadCell>
-                  <TableHeadCell>Rejected</TableHeadCell>
-                  <TableHeadCell>Rejection rate</TableHeadCell>
-                  <TableHeadCell>Avg time-to-answer</TableHeadCell>
-                  <TableHeadCell>Top terms</TableHeadCell>
+                  <TableHead>Room</TableHead>
+                  <TableHead>Session</TableHead>
+                  <TableHead>Answered</TableHead>
+                  <TableHead>Rejected</TableHead>
+                  <TableHead>Rejection rate</TableHead>
+                  <TableHead>Avg time-to-answer</TableHead>
+                  <TableHead>Top terms</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

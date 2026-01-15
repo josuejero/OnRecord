@@ -21,7 +21,7 @@ type RecapRow = {
 
 const PUBLIC_RECAP_SUMMARY_ID = 'public-recap-summary';
 
-type RecapPanelProps = {
+export type RecapPanelProps = {
   sessionId: string;
   revalidatePath: string;
   recaps: RecapRow[];
