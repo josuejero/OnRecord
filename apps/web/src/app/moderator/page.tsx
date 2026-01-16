@@ -4,6 +4,8 @@ import { requireRole } from '@/lib/auth/require';
 
 export default async function ModeratorDashboard() {
   const { user, role } = await requireRole(['moderator', 'staff', 'admin_service']);
+  const disableRoomsPrefetch = process.env.NEXT_PUBLIC_DISABLE_ROOM_PREFETCH === 'true';
+  const roomsLinkPrefetch = disableRoomsPrefetch ? false : undefined;
 
   return (
     <Card>
@@ -20,7 +22,11 @@ export default async function ModeratorDashboard() {
         <p className="text-slate-500">
           Phase 2 adds session lifecycle controls; Phase 3 adds the realtime question queue.
         </p>
-        <Link className="inline-flex text-slate-900 underline" href="/rooms">
+        <Link
+          className="inline-flex text-slate-900 underline"
+          href="/rooms"
+          prefetch={roomsLinkPrefetch}
+        >
           Browse rooms
         </Link>
       </CardContent>

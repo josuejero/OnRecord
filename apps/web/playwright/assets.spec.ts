@@ -1,7 +1,7 @@
 import { test, expect } from './test.setup';
-import { loginAs } from './helpers/auth';
 import { roomPath, buildRecapSlug } from './helpers/rooms';
 import { randomUUID } from 'node:crypto';
+import { moderatorState } from './helpers/storage-state';
 
 function newAssetPayload() {
   return {
@@ -11,15 +11,16 @@ function newAssetPayload() {
   };
 }
 
-test('private asset does not appear on public recap', async ({ page }) => {
-  await loginAs(page, { email: 'moderator@onrecord.local' });
+test.use({ storageState: moderatorState });
+
+test('private asset does not appear on public recap', async ({ page, baseURL }) => {
   await page.goto(roomPath);
 
   const sessionId = (await page.getByTestId('session-id').textContent()) ?? '';
   const recapSlug = buildRecapSlug(sessionId);
   await page.getByRole('button', { name: 'Publish recap' }).first().click();
 
-  const baselineCtx = await page.context().browser()?.newContext();
+  const baselineCtx = await page.context().browser()?.newContext({ baseURL });
   if (!baselineCtx) throw new Error('browser context missing');
   const baselinePage = await baselineCtx.newPage();
   await baselinePage.goto(`/recaps/${recapSlug}`);
@@ -32,7 +33,7 @@ test('private asset does not appear on public recap', async ({ page }) => {
   await page.locator('[data-testid="asset-submit"]:visible').click();
   await page.waitForTimeout(1000);
 
-  const ctx = await page.context().browser()?.newContext();
+  const ctx = await page.context().browser()?.newContext({ baseURL });
   if (!ctx) throw new Error('browser context missing');
 
   const pub = await ctx.newPage();
@@ -44,8 +45,11 @@ test('private asset does not appear on public recap', async ({ page }) => {
   await ctx.close();
 });
 
-test('public asset shows on recap and is publicly readable', async ({ page, request }) => {
-  await loginAs(page, { email: 'moderator@onrecord.local' });
+test('public asset shows on recap and is publicly readable', async ({
+  page,
+  request,
+  baseURL,
+}) => {
   await page.goto(roomPath);
 
   const sessionId = (await page.getByTestId('session-id').textContent()) ?? '';
@@ -57,7 +61,7 @@ test('public asset shows on recap and is publicly readable', async ({ page, requ
   await page.locator('[data-testid="asset-submit"]:visible').click();
   await page.waitForTimeout(1000);
 
-  const ctx = await page.context().browser()?.newContext();
+  const ctx = await page.context().browser()?.newContext({ baseURL });
   if (!ctx) throw new Error('browser context missing');
 
   const pub = await ctx.newPage();

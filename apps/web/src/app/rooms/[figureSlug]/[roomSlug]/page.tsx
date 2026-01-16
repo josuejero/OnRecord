@@ -1,4 +1,5 @@
 import { unstable_cache } from 'next/cache';
+import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 import { PanelErrorBoundary } from '@/components/panel-error-boundary';
@@ -33,10 +34,28 @@ async function fetchLiveSession(
 
 type PageProps = {
   params: Promise<{ figureSlug: string; roomSlug: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function RoomPage({ params }: PageProps) {
+export default async function RoomPage({ params, searchParams }: PageProps) {
   const { figureSlug, roomSlug } = await params;
+  const resolvedSearchParams = await searchParams;
+  const e2eRoomErrorParam = resolvedSearchParams?.__e2e_room_error;
+  const shouldThrowRoomError =
+    process.env.NEXT_PUBLIC_E2E === '1' &&
+    (e2eRoomErrorParam === '1' ||
+      (Array.isArray(e2eRoomErrorParam) && e2eRoomErrorParam.includes('1')));
+  if (shouldThrowRoomError) {
+    throw new Error('e2e_room_error');
+  }
+
+  if (isE2E) {
+    const cookieStore = await cookies();
+    const ms = Number(cookieStore.get('e2e_delay_room_detail_ms')?.value ?? 0);
+    if (Number.isFinite(ms) && ms > 0) {
+      await new Promise((resolve) => setTimeout(resolve, ms));
+    }
+  }
 
   // Require auth + role (matches how /rooms/page.tsx gates access)
   const { role } = await requireRole(['staff', 'moderator', 'reporter']);

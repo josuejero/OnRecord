@@ -55,6 +55,8 @@ type InsightsSessionRow = {
 
 export default async function InsightsPage() {
   await requireRole(['moderator', 'staff', 'admin_service']);
+  const disableRoomsPrefetch = process.env.NEXT_PUBLIC_DISABLE_ROOM_PREFETCH === 'true';
+  const roomsLinkPrefetch = disableRoomsPrefetch ? false : undefined;
 
   const supabase = supabaseServer();
   const { data: sessions, error } = await supabase
@@ -166,7 +168,9 @@ export default async function InsightsPage() {
               }
               action={
                 <Button size="sm" variant="outline" asChild>
-                  <Link href="/rooms">Visit rooms</Link>
+                  <Link href="/rooms" prefetch={roomsLinkPrefetch}>
+                    Visit rooms
+                  </Link>
                 </Button>
               }
               className="m-0 border-none bg-transparent p-0 shadow-none"

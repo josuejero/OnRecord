@@ -480,7 +480,7 @@ export function QuestionQueueClient({
   return (
     <div className="space-y-6">
       {error ? (
-        <Alert variant="error">
+        <Alert variant="error" data-testid="question-queue-error">
           <AlertTitle>Question queue error</AlertTitle>
           <p>{error}</p>
         </Alert>

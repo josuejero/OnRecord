@@ -1,9 +1,10 @@
 import { expect, test } from './test.setup';
-import { loginAs } from './helpers/auth';
 import { roomPath } from './helpers/rooms';
+import { staffState } from './helpers/storage-state';
+
+test.use({ storageState: staffState });
 
 test('staff can label spans and persistence remains after reload', async ({ page }) => {
-  await loginAs(page, { email: 'staff@onrecord.local' });
   await page.goto(roomPath);
 
   const sessionId = await page.getByTestId('session-id').textContent();
@@ -19,6 +20,8 @@ test('staff can label spans and persistence remains after reload', async ({ page
   expect(start).toBeGreaterThanOrEqual(0);
   const end = start + snippet.length;
 
+  await page.getByLabel('Label value (optional)').fill('policy rollout');
+
   await transcriptArea.evaluate(
     (el: HTMLTextAreaElement, selection: number[]) => {
       if (selection.length < 2) return;
@@ -30,7 +33,7 @@ test('staff can label spans and persistence remains after reload', async ({ page
     [start, end],
   );
 
-  await page.getByLabel('Label value (optional)').fill('policy rollout');
+  await expect(page.getByTestId('create-label-button')).toBeEnabled();
   await page.getByTestId('create-label-button').click();
 
   const snippetLocator = page

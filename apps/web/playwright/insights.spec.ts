@@ -1,8 +1,9 @@
 import { test, expect } from './test.setup';
-import { loginAs } from './helpers/auth';
+import { staffState } from './helpers/storage-state';
+
+test.use({ storageState: staffState });
 
 test('staff can view insights', async ({ page }) => {
-  await loginAs(page, { email: 'staff@onrecord.local' });
   await page.goto('/insights');
   await expect(page.getByRole('heading', { name: 'Insights' })).toBeVisible();
 });

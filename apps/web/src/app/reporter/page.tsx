@@ -4,6 +4,8 @@ import { requireRole } from '@/lib/auth/require';
 
 export default async function ReporterDashboard() {
   const { user, role } = await requireRole(['reporter']);
+  const disableRoomsPrefetch = process.env.NEXT_PUBLIC_DISABLE_ROOM_PREFETCH === 'true';
+  const roomsLinkPrefetch = disableRoomsPrefetch ? false : undefined;
 
   return (
     <Card>
@@ -20,7 +22,11 @@ export default async function ReporterDashboard() {
         <p className="text-slate-500">
           Phase 2 adds room/session navigation; Phase 3 adds question submission.
         </p>
-        <Link className="inline-flex text-slate-900 underline" href="/rooms">
+        <Link
+          className="inline-flex text-slate-900 underline"
+          href="/rooms"
+          prefetch={roomsLinkPrefetch}
+        >
           Browse rooms
         </Link>
       </CardContent>

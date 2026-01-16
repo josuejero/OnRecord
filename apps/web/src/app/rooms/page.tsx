@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { cookies } from 'next/headers';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -6,6 +7,8 @@ import { EmptyState } from '@/components/empty-state';
 import { supabaseServer } from '@/lib/supabase/server';
 import { requireRole } from '@/lib/auth/require';
 import { MapPin } from 'lucide-react';
+
+const isE2E = process.env.NEXT_PUBLIC_E2E === '1';
 
 type RoomRow = {
   id: string;
@@ -15,6 +18,14 @@ type RoomRow = {
 };
 
 export default async function RoomsPage() {
+  if (isE2E) {
+    const cookieStore = await cookies();
+    const ms = Number(cookieStore.get('e2e_delay_rooms_ms')?.value ?? 0);
+    if (Number.isFinite(ms) && ms > 0) {
+      await new Promise((resolve) => setTimeout(resolve, ms));
+    }
+  }
+
   const { user, role } = await requireRole(['reporter', 'moderator', 'staff', 'admin_service']);
   const supabase = supabaseServer();
   const disableRoomLinksPrefetch = process.env.NEXT_PUBLIC_DISABLE_ROOM_PREFETCH === 'true';

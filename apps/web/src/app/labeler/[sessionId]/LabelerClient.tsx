@@ -94,6 +94,7 @@ export function LabelerClient({
     const handleSelectionChange = () => {
       const el = textRef.current;
       if (!el) return;
+      if (document.activeElement !== el) return;
       const start = el.selectionStart ?? 0;
       const end = el.selectionEnd ?? 0;
       setSelection((prev) => (prev.start === start && prev.end === end ? prev : { start, end }));

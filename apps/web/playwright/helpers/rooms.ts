@@ -12,10 +12,15 @@ export async function ensureSessionLive(page: Page) {
   const startButton = page.getByTestId('session-start');
   if (await startButton.count()) {
     await expect(startButton).toBeVisible();
-    await startButton.click();
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+      startButton.click(),
+    ]);
   }
 
   const statusBadge = page.getByTestId('session-status-badge');
   await expect(statusBadge).toHaveText(/live/i);
   await expect(statusBadge).toBeVisible();
+  await page.reload();
+  await expect(statusBadge).toHaveText(/live/i);
 }
