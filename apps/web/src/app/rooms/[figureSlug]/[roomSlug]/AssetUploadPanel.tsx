@@ -18,6 +18,7 @@ export function AssetUploadPanel(props: {
         <select
           name="visibility"
           defaultValue="public"
+          data-testid="asset-visibility"
           className="rounded-md border bg-background px-3 py-2 text-sm"
         >
           <option value="public">Public</option>
@@ -29,12 +30,14 @@ export function AssetUploadPanel(props: {
           name="file"
           type="file"
           className="rounded-md border bg-background px-3 py-2 text-sm"
+          data-testid="asset-file"
           required
         />
 
         <button
           type="submit"
           className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
+          data-testid="asset-submit"
         >
           Upload
         </button>

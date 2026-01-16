@@ -8,6 +8,12 @@ export async function loginAs(page: Page, opts: { email: string; password?: stri
   await page.getByTestId('login-password').fill(password);
   await page.getByTestId('login-submit').click();
 
-  // One stable “logged in” assertion.
+  // Stable “logged in” assertion on /login.
+  await expect(page.getByTestId('login-signed-in')).toBeVisible();
+  await expect(page.getByTestId('login-signed-in-email')).toContainText(opts.email);
+
+  // Now land on the canonical page the rest of the suite expects.
+  await page.goto('/whoami');
+  await expect(page.getByTestId('whoami-role')).toBeVisible();
   await expect(page.getByTestId('whoami-title')).toBeVisible();
 }

@@ -9,7 +9,8 @@
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
-    "test:e2e:smoke": "playwright test --project=chromium --project=firefox --project=webkit --project=mobile-chrome --project=mobile-safari polish.spec.ts"
+    "test:e2e:smoke": "playwright test --project=chromium --project=firefox --project=webkit --project=mobile-chrome --project=mobile-safari polish.spec.ts",
+    "db:seed:e2e": "node scripts/seed-users.mjs"
   },
   "dependencies": {
     "@onrecord/shared": "workspace:*",

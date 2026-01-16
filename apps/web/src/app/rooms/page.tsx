@@ -17,6 +17,8 @@ type RoomRow = {
 export default async function RoomsPage() {
   const { user, role } = await requireRole(['reporter', 'moderator', 'staff', 'admin_service']);
   const supabase = supabaseServer();
+  const disableRoomLinksPrefetch = process.env.NEXT_PUBLIC_DISABLE_ROOM_PREFETCH === 'true';
+  const roomLinkPrefetch = disableRoomLinksPrefetch ? false : undefined;
 
   const { data: reporter } = await supabase
     .from('reporters')
@@ -84,6 +86,7 @@ export default async function RoomsPage() {
                 <Button asChild size="sm" variant="outline" className="w-full justify-center">
                   <Link
                     href={`/rooms/${encodeURIComponent(figSlug)}/${encodeURIComponent(room.slug)}`}
+                    prefetch={roomLinkPrefetch}
                   >
                     Open room
                   </Link>

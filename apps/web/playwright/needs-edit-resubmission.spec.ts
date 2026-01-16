@@ -1,31 +1,26 @@
-import { test, expect, type Page } from './test.setup';
+import { test, expect } from './test.setup';
+import { loginAs } from './helpers/auth';
 import { ensureSessionLive, roomPath } from './helpers/rooms';
-
-async function login(page: Page, email: string, password = 'password123!') {
-  await page.goto('/login');
-  await page.getByTestId('login-email').fill(email);
-  await page.getByTestId('login-password').fill(password);
-  await page.getByTestId('login-submit').click();
-  await expect(page.getByTestId('whoami-title')).toBeVisible();
-}
 
 test('reporter can resubmit only when needs_edit', async ({ browser }) => {
   const modCtx = await browser.newContext();
   const modPage = await modCtx.newPage();
-  await login(modPage, 'moderator@onrecord.local');
+  await loginAs(modPage, { email: 'moderator@onrecord.local' });
   await modPage.goto(roomPath);
   await ensureSessionLive(modPage);
 
   const repCtx = await browser.newContext();
   const repPage = await repCtx.newPage();
-  await login(repPage, 'reporter@onrecord.local');
+  await loginAs(repPage, { email: 'reporter@onrecord.local' });
   await repPage.goto(roomPath);
 
   const q = 'what about the plan?';
-  await repPage.getByTestId('question-body').fill(q);
-  await repPage.getByTestId('question-submit').click();
+  await repPage.locator('[data-testid="question-body"]:visible').fill(q);
+  await repPage.locator('[data-testid="question-submit"]:visible').click();
 
-  await expect(modPage.getByTestId('queue-list')).toContainText(q, { timeout: 15_000 });
+  await expect(modPage.locator('[data-testid="queue-list"]:visible')).toContainText(q, {
+    timeout: 15_000,
+  });
 
   // Mark as needs_edit
   await modPage.getByTestId('moderate-needs-edit').first().click();

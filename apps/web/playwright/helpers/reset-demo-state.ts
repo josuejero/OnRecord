@@ -55,3 +55,11 @@ export async function resetDemoState() {
     .eq('id', sessionId);
   if (sessionError) throw sessionError;
 }
+
+export async function ensureRecapUnpublished(slug: string) {
+  const normalized = slug.trim();
+  if (!normalized) return;
+
+  const { error } = await supabase.from('recap_pages').delete().eq('slug', normalized);
+  if (error) throw error;
+}

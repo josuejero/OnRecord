@@ -2,13 +2,34 @@ import { unstable_cache } from 'next/cache';
 import { notFound } from 'next/navigation';
 
 import { PanelErrorBoundary } from '@/components/panel-error-boundary';
+import { cn } from '@/lib/utils';
 import { requireRole } from '@/lib/auth/require';
 import { getFeatureFlags } from '@/lib/config/features';
 import { supabaseServer } from '@/lib/supabase/server';
 
 import { QuestionQueueClient } from './QuestionQueueClient';
 import { RecapPanel, type RecapPanelProps } from './RecapPanel';
+import { AssetUploadPanel } from './AssetUploadPanel';
+import { RecapPublishPanel } from './RecapPublishPanel';
 import { TranscriptPanel } from './TranscriptPanel';
+import { startSession, endSession } from './actions';
+
+const isE2E = process.env.NEXT_PUBLIC_E2E === '1';
+
+async function fetchLiveSession(
+  roomId: string,
+  supabase: ReturnType<typeof supabaseServer>,
+) {
+  const { data: session } = await supabase
+    .from('sessions')
+    .select('*')
+    .eq('room_id', roomId)
+    .eq('status', 'live')
+    .order('created_at', { ascending: false })
+    .maybeSingle();
+
+  return session ?? null;
+}
 
 type PageProps = {
   params: Promise<{ figureSlug: string; roomSlug: string }>;
@@ -52,21 +73,16 @@ export default async function RoomPage({ params }: PageProps) {
 
   const { figure, room } = cached;
 
-  const getCachedLiveSession = unstable_cache(
-    async () => {
-      const { data: session } = await supabase
-        .from('sessions')
-        .select('*')
-        .eq('room_id', room.id)
-        .eq('status', 'live')
-        .order('created_at', { ascending: false })
-        .maybeSingle();
-
-      return session ?? null;
-    },
-    ['session:live-by-room', room.id],
-    { revalidate: 5 },
-  );
+  const getLiveSession = isE2E
+    ? async () => fetchLiveSession(room.id, supabase)
+    : unstable_cache(
+        async () => fetchLiveSession(room.id, supabase),
+        [`liveSession:${room.id}`],
+        {
+          revalidate: 5,
+          tags: [`room:${room.id}:liveSession`],
+        },
+      );
 
   const getCachedLatestSession = unstable_cache(
     async () => {
@@ -85,12 +101,15 @@ export default async function RoomPage({ params }: PageProps) {
   );
 
   const [live, latest, featureFlags] = await Promise.all([
-    getCachedLiveSession(),
+    getLiveSession(),
     getCachedLatestSession(),
     getFeatureFlags(),
   ]);
 
   const session = live ?? latest;
+  const canControlSession = role === 'moderator' || role === 'staff';
+  const isLive = Boolean(live);
+  const sessionToControl = live ?? latest;
   let recaps: RecapPanelProps['recaps'] = [];
 
   if (session) {
@@ -125,18 +144,42 @@ export default async function RoomPage({ params }: PageProps) {
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="truncate text-sm text-muted-foreground">{figure.name}</div>
-            <h1 className="truncate text-lg font-semibold">{room.title}</h1>
+            <h1 className="truncate text-lg font-semibold" data-testid="room-title">
+              {room.title}
+            </h1>
           </div>
 
           <div className="flex items-center gap-2 text-sm">
-            {live ? (
-              <span className="rounded-full bg-green-500/15 px-2 py-1 text-green-700">
-                Live
-              </span>
-            ) : (
-              <span className="rounded-full bg-muted px-2 py-1 text-muted-foreground">
-                Not live
-              </span>
+            <span
+              data-testid="session-status-badge"
+              className={cn(
+                'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+                isLive ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800',
+              )}
+            >
+              {isLive ? 'Live' : 'Not live'}
+            </span>
+
+            {canControlSession && sessionToControl && !isLive && (
+              <form action={startSession}>
+                <input type="hidden" name="session_id" value={sessionToControl.id} />
+                <input type="hidden" name="room_id" value={room.id} />
+                <input type="hidden" name="revalidate" value={revalidatePath} />
+                <button data-testid="session-start" type="submit" className="ml-2">
+                  Start session
+                </button>
+              </form>
+            )}
+
+            {canControlSession && live && (
+              <form action={endSession}>
+                <input type="hidden" name="session_id" value={live.id} />
+                <input type="hidden" name="room_id" value={room.id} />
+                <input type="hidden" name="revalidate" value={revalidatePath} />
+                <button data-testid="session-end" type="submit" className="ml-2">
+                  End session
+                </button>
+              </form>
             )}
           </div>
         </div>
@@ -173,6 +216,21 @@ export default async function RoomPage({ params }: PageProps) {
                 />
               </PanelErrorBoundary>
 
+              <PanelErrorBoundary title="Publish error">
+                <RecapPublishPanel
+                  sessionId={session.id}
+                  figureSlug={figure.slug}
+                  figureName={figure.name}
+                  roomSlug={room.slug}
+                  roomTitle={room.title}
+                  revalidatePath={revalidatePath}
+                />
+              </PanelErrorBoundary>
+
+              <PanelErrorBoundary title="Asset upload error">
+                <AssetUploadPanel sessionId={session.id} revalidatePath={revalidatePath} />
+              </PanelErrorBoundary>
+
               <PanelErrorBoundary title="Transcript panel error">
                 <TranscriptPanel sessionId={session.id} revalidate={revalidatePath} />
               </PanelErrorBoundary>
@@ -198,6 +256,21 @@ export default async function RoomPage({ params }: PageProps) {
                     recaps={recaps}
                     featureFlags={featureFlags}
                   />
+                </PanelErrorBoundary>
+
+                <PanelErrorBoundary title="Publish error">
+                  <RecapPublishPanel
+                    sessionId={session.id}
+                    figureSlug={figure.slug}
+                    figureName={figure.name}
+                    roomSlug={room.slug}
+                    roomTitle={room.title}
+                    revalidatePath={revalidatePath}
+                  />
+                </PanelErrorBoundary>
+
+                <PanelErrorBoundary title="Asset upload error">
+                  <AssetUploadPanel sessionId={session.id} revalidatePath={revalidatePath} />
                 </PanelErrorBoundary>
 
                 <PanelErrorBoundary title="Transcript panel error">

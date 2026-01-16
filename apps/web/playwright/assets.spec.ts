@@ -27,9 +27,9 @@ test('private asset does not appear on public recap', async ({ page }) => {
   const baselineCount = await baselineAssets.count();
   await baselineCtx.close();
 
-  await page.getByTestId('asset-visibility').selectOption('private');
-  await page.getByTestId('asset-file').setInputFiles(newAssetPayload());
-  await page.getByTestId('asset-submit').click();
+  await page.locator('[data-testid="asset-visibility"]:visible').selectOption('private');
+  await page.locator('[data-testid="asset-file"]:visible').setInputFiles(newAssetPayload());
+  await page.locator('[data-testid="asset-submit"]:visible').click();
   await page.waitForTimeout(1000);
 
   const ctx = await page.context().browser()?.newContext();
@@ -52,9 +52,9 @@ test('public asset shows on recap and is publicly readable', async ({ page, requ
   const recapSlug = buildRecapSlug(sessionId);
   await page.getByRole('button', { name: 'Publish recap' }).first().click();
 
-  await page.getByTestId('asset-visibility').selectOption('public');
-  await page.getByTestId('asset-file').setInputFiles(newAssetPayload());
-  await page.getByTestId('asset-submit').click();
+  await page.locator('[data-testid="asset-visibility"]:visible').selectOption('public');
+  await page.locator('[data-testid="asset-file"]:visible').setInputFiles(newAssetPayload());
+  await page.locator('[data-testid="asset-submit"]:visible').click();
   await page.waitForTimeout(1000);
 
   const ctx = await page.context().browser()?.newContext();

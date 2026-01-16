@@ -108,10 +108,15 @@ export default function LoginPage() {
 
       {signedInEmail ? (
         <section className="rounded-md border p-3">
-          <div data-testid="whoami-title" className="text-sm font-medium">
+          <div data-testid="login-signed-in" className="text-sm font-medium">
             Signed in
           </div>
-          <div className="text-sm opacity-80">{signedInEmail}</div>
+          <div
+            data-testid="login-signed-in-email"
+            className="text-sm opacity-80"
+          >
+            {signedInEmail}
+          </div>
         </section>
       ) : null}
     </main>

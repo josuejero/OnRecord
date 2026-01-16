@@ -1,6 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
-const webServerCommand = 'pnpm --filter @onrecord/web dev --hostname 0.0.0.0 --port 3000';
+const webServerCommand =
+  'NEXT_PUBLIC_E2E=1 pnpm --filter @onrecord/web dev --hostname 0.0.0.0 --port 3000';
 const reuseExistingServer = !process.env.CI;
 
 console.info('[e2e] Playwright e2e config loaded');

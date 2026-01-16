@@ -8,7 +8,8 @@ function mustGetEnv(key: string) {
   return v;
 }
 
-export default async function globalSetup(config: FullConfig) {
+export default async function globalSetup(_config: FullConfig) {
+  void _config;
   // Ensure the web server can start under Playwright with the exact env vars it expects.
   // (e2e config uses `pnpm --filter @onrecord/web dev ...`, so it reads apps/web/.env and process env)
   // Map common Supabase env var names to the ones the app expects.
@@ -41,19 +42,13 @@ export default async function globalSetup(config: FullConfig) {
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = anonKey;
   process.env.SUPABASE_SERVICE_ROLE_KEY = serviceRoleKey;
 
-  // Seed via existing script if present; otherwise noop.
-  // This keeps e2e deterministic and avoids tests waiting on missing sessions/figures.
+  // Run the dedicated e2e seeding script so we fail fast on missing state.
   const projectRoot = path.resolve(__dirname, '..');
-  try {
-    execSync('pnpm -s run db:seed:e2e', {
-      cwd: projectRoot,
-      stdio: 'inherit',
-      env: process.env,
-    });
-  } catch {
-    // If no seed script exists, don't fail global setup.
-    // Individual tests should still seed via API/helpers.
-  }
+  execSync('pnpm -s --filter @onrecord/web run db:seed:e2e', {
+    cwd: projectRoot,
+    stdio: 'inherit',
+    env: process.env,
+  });
 
   // Smoke check for required env after mapping
   mustGetEnv('NEXT_PUBLIC_SUPABASE_URL');

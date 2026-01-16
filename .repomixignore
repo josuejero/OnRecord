@@ -1,0 +1,15 @@
+repomix-output.*
+
+playwright-report*/
+test-results*/
+.last-run.json
+trace.zip
+
+*.tsbuildinfo
+
+.next/
+out/
+build/
+coverage/
+.turbo/
+.cache/

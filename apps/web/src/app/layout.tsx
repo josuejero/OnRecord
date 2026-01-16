@@ -15,6 +15,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const featureFlags = getFeatureFlags();
+  const disableRoomsPrefetch = process.env.NEXT_PUBLIC_DISABLE_ROOM_PREFETCH === 'true';
+  const roomsLinkPrefetch = disableRoomsPrefetch ? false : undefined;
 
   return (
     <html lang="en">
@@ -37,7 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Link data-testid="nav-demo-room" href="/demo-room">
                   Demo Room
                 </Link>
-                <Link data-testid="nav-rooms" href="/rooms">
+                <Link data-testid="nav-rooms" href="/rooms" prefetch={roomsLinkPrefetch}>
                   Rooms
                 </Link>
                 <Link data-testid="nav-reporter" href="/reporter">

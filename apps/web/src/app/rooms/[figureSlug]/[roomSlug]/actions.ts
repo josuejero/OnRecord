@@ -1,7 +1,7 @@
 'use server';
 
 import crypto from 'node:crypto';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { pipeline } from '@xenova/transformers';
 import type { SummarizationPipeline } from '@xenova/transformers';
@@ -122,6 +122,8 @@ export async function createScheduledSession(formData: FormData) {
 export async function startSession(formData: FormData) {
   const sessionId = requireString(formData, 'session_id');
   const revalidate = requireString(formData, 'revalidate');
+  const roomId = requireString(formData, 'room_id');
+  const liveSessionTag = `room:${roomId}:liveSession`;
 
   const supabase = supabaseServer();
   try {
@@ -129,18 +131,22 @@ export async function startSession(formData: FormData) {
     if (error) throw new Error(error.message);
   } catch (err) {
     revalidatePath(revalidate);
+    updateTag(liveSessionTag);
     redirectWithToast(revalidate, toastKeys.SESSION_START_FAILED, {
       toast_error: toastErrorMessage(err),
     });
   }
 
   revalidatePath(revalidate);
+  updateTag(liveSessionTag);
   redirectWithToast(revalidate, toastKeys.SESSION_STARTED);
 }
 
 export async function endSession(formData: FormData) {
   const sessionId = requireString(formData, 'session_id');
   const revalidate = requireString(formData, 'revalidate');
+  const roomId = requireString(formData, 'room_id');
+  const liveSessionTag = `room:${roomId}:liveSession`;
 
   const supabase = supabaseServer();
   try {
@@ -148,12 +154,14 @@ export async function endSession(formData: FormData) {
     if (error) throw new Error(error.message);
   } catch (err) {
     revalidatePath(revalidate);
+    updateTag(liveSessionTag);
     redirectWithToast(revalidate, toastKeys.SESSION_END_FAILED, {
       toast_error: toastErrorMessage(err),
     });
   }
 
   revalidatePath(revalidate);
+  updateTag(liveSessionTag);
   redirectWithToast(revalidate, toastKeys.SESSION_ENDED);
 }
 
