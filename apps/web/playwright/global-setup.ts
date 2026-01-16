@@ -14,7 +14,7 @@ function mustGetEnv(key: string) {
 function getBaseURL(config: FullConfig) {
   const projectBaseURL = config.projects[0]?.use?.baseURL;
   if (typeof projectBaseURL === 'string') return projectBaseURL;
-  const configBaseURL = config.use?.baseURL;
+  const configBaseURL = (config as FullConfig & { use?: { baseURL?: string } }).use?.baseURL;
   if (typeof configBaseURL === 'string') return configBaseURL;
   return 'http://127.0.0.1:3000';
 }

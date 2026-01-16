@@ -314,6 +314,7 @@ pnpm-workspace.yaml
 README.md
 SECURITY.md
 tsconfig.base.json
+turbo.json
 </directory_structure>
 
 <files>
@@ -4624,6 +4625,18 @@ refresh-demo-data:
     "resolveJsonModule": true,
     "isolatedModules": true,
     "types": []
+  }
+}
+</file>
+
+<file path="turbo.json">
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+    }
   }
 }
 </file>
