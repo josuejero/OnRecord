@@ -2,13 +2,7 @@ import Link from 'next/link';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Page, PageHeader } from '@/components/layout';
 import { requireRole } from '@/lib/auth/require';
 import { supabaseServer } from '@/lib/supabase/server';
@@ -30,14 +24,13 @@ type RecentSession = {
   id: string;
   status: string;
   starts_at: string | null;
-  room?: (
-    | {
+  room?:
+    | ({
         title: string;
         slug: string;
         public_figures?: { name: string; slug: string }[] | null;
-      }
-    | null
-  )[] | null;
+      } | null)[]
+    | null;
 };
 
 type DocLink = {
@@ -119,8 +112,8 @@ export default async function ModeratorDashboard() {
               </Button>
             </div>
             <p className="text-sm text-slate-500">
-              Use this space to jump directly into rooms or the insights view whenever you
-              need a pulse on recent activity.
+              Use this space to jump directly into rooms or the insights view whenever you need a
+              pulse on recent activity.
             </p>
           </CardContent>
         </Card>
@@ -155,16 +148,16 @@ export default async function ModeratorDashboard() {
           </CardHeader>
           <CardContent className="space-y-3">
             {roomList.length === 0 ? (
-              <p className="text-sm text-slate-500">No rooms yet. Create the first one to get started.</p>
+              <p className="text-sm text-slate-500">
+                No rooms yet. Create the first one to get started.
+              </p>
             ) : (
               roomList.map((room) => {
                 const figure = room.public_figures?.[0];
                 const figureName = figure?.name ?? 'Unknown figure';
                 const figureSlug = figure?.slug ?? '';
                 const roomUrl =
-                  figureSlug && room.slug
-                    ? `/rooms/${figureSlug}/${room.slug}`
-                    : '/rooms';
+                  figureSlug && room.slug ? `/rooms/${figureSlug}/${room.slug}` : '/rooms';
                 return (
                   <article
                     key={room.id}

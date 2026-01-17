@@ -5,14 +5,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { supabaseServer } from '@/lib/supabase/server';
 import { requireRole } from '@/lib/auth/require';
 import { MapPin } from 'lucide-react';
-import {
-  EmptyPanel,
-  ErrorPanel,
-  Panel,
-  PanelHeader,
-  Page,
-  PageHeader,
-} from '@/components/layout';
+import { EmptyPanel, ErrorPanel, Panel, PanelHeader, Page, PageHeader } from '@/components/layout';
 import { RoomsIndexClient, type RoomIndexRow } from './RoomsIndexClient';
 
 const isE2E = process.env.NEXT_PUBLIC_E2E === '1';
@@ -57,9 +50,7 @@ export default async function RoomsPage() {
 
   const { data: rooms, error: roomsError } = await supabase
     .from('rooms')
-    .select(
-      'id, slug, title, created_at, updated_at, public_figures ( slug, name )',
-    )
+    .select('id, slug, title, created_at, updated_at, public_figures ( slug, name )')
     .order('updated_at', { ascending: false });
   const { data: sessions, error: sessionsError } = await supabase
     .from('sessions')
@@ -79,9 +70,7 @@ export default async function RoomsPage() {
       session.updated_at ?? session.ends_at ?? session.starts_at ?? 0,
     ).getTime();
     const previousTime = previous
-      ? new Date(
-          previous.updated_at ?? previous.ends_at ?? previous.starts_at ?? 0,
-        ).getTime()
+      ? new Date(previous.updated_at ?? previous.ends_at ?? previous.starts_at ?? 0).getTime()
       : 0;
     if (!previous || currentTime >= previousTime) {
       activityByRoom.set(session.room_id, session);
@@ -124,7 +113,9 @@ export default async function RoomsPage() {
         actions={demoAction}
       />
 
-      <Panel header={<PanelHeader title="Account information" description="Your session context" />}>
+      <Panel
+        header={<PanelHeader title="Account information" description="Your session context" />}
+      >
         <div className="space-y-2 text-sm text-slate-600">
           <div>
             Signed in as: <span className="font-semibold text-slate-900">{user.email}</span>
@@ -159,7 +150,14 @@ export default async function RoomsPage() {
           }
         />
       ) : roomsList.length > 0 ? (
-        <Panel header={<PanelHeader title="Available rooms" description="Scan for motivation, tap to jump in." />}>
+        <Panel
+          header={
+            <PanelHeader
+              title="Available rooms"
+              description="Scan for motivation, tap to jump in."
+            />
+          }
+        >
           <RoomsIndexClient rooms={roomsList} roomLinkPrefetch={roomLinkPrefetch} />
         </Panel>
       ) : (

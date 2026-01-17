@@ -13,31 +13,27 @@ test.describe('reporter navigation polish', () => {
 
     const origin = new URL(page.url()).origin;
 
-    await page.context().addCookies([
-      { name: 'e2e_delay_rooms_ms', value: '2500', url: origin },
-    ]);
+    await page.context().addCookies([{ name: 'e2e_delay_rooms_ms', value: '2500', url: origin }]);
 
     await page.getByRole('link', { name: 'Rooms' }).click();
     await expect(page.getByTestId('rooms-loading')).toBeVisible({ timeout: 6000 });
 
-    await page.context().addCookies([
-      { name: 'e2e_delay_rooms_ms', value: '0', url: origin },
-    ]);
+    await page.context().addCookies([{ name: 'e2e_delay_rooms_ms', value: '0', url: origin }]);
 
     await page.waitForURL('**/rooms');
     await expect(page.getByTestId('rooms-title')).toBeVisible();
     await expect(page.getByTestId('toaster-mounted')).toBeVisible();
 
-    await page.context().addCookies([
-      { name: 'e2e_delay_room_detail_ms', value: '2500', url: origin },
-    ]);
+    await page
+      .context()
+      .addCookies([{ name: 'e2e_delay_room_detail_ms', value: '2500', url: origin }]);
 
     await page.getByRole('link', { name: 'Open room' }).first().click();
     await expect(page.getByTestId('room-detail-loading')).toBeVisible({ timeout: 6000 });
 
-    await page.context().addCookies([
-      { name: 'e2e_delay_room_detail_ms', value: '0', url: origin },
-    ]);
+    await page
+      .context()
+      .addCookies([{ name: 'e2e_delay_room_detail_ms', value: '0', url: origin }]);
 
     await page.waitForURL('**/rooms/**');
     await expect(page.getByTestId('room-title')).toBeVisible();

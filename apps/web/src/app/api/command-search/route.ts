@@ -11,10 +11,7 @@ const RECAP_LIMIT = 5;
 const ASSET_LIMIT = 5;
 const TERM_LIMIT = 6;
 
-function buildRoomHref(
-  figureSlug: string | null | undefined,
-  roomSlug: string | null | undefined,
-) {
+function buildRoomHref(figureSlug: string | null | undefined, roomSlug: string | null | undefined) {
   if (!figureSlug || !roomSlug) {
     return null;
   }
@@ -75,14 +72,12 @@ async function searchRooms(
       .limit(ROOM_LIMIT),
   ]);
 
-  const merged = mergeUniqueById(
-    [...(titleResult.data ?? []), ...(figureResult.data ?? [])] as {
-      id: string;
-      slug: string;
-      title: string;
-      public_figures?: { slug?: string; name?: string } | null;
-    }[],
-  ).slice(0, ROOM_LIMIT);
+  const merged = mergeUniqueById([...(titleResult.data ?? []), ...(figureResult.data ?? [])] as {
+    id: string;
+    slug: string;
+    title: string;
+    public_figures?: { slug?: string; name?: string } | null;
+  }[]).slice(0, ROOM_LIMIT);
 
   const results: CommandPaletteSearchResult[] = [];
   for (const room of merged) {
@@ -135,19 +130,20 @@ async function searchSessions(
       .limit(SESSION_LIMIT),
   ]);
 
-  const merged = mergeUniqueById(
-    [...(titleResults.data ?? []), ...(figureResults.data ?? [])] as Array<{
-      id: string;
-      status: string;
-      starts_at: string | null;
-      ends_at: string | null;
-      rooms?: {
-        slug?: string;
-        title?: string;
-        public_figures?: { slug?: string; name?: string } | null;
-      } | null;
-    }>,
-  ).slice(0, SESSION_LIMIT);
+  const merged = mergeUniqueById([
+    ...(titleResults.data ?? []),
+    ...(figureResults.data ?? []),
+  ] as Array<{
+    id: string;
+    status: string;
+    starts_at: string | null;
+    ends_at: string | null;
+    rooms?: {
+      slug?: string;
+      title?: string;
+      public_figures?: { slug?: string; name?: string } | null;
+    } | null;
+  }>).slice(0, SESSION_LIMIT);
 
   const results: CommandPaletteSearchResult[] = [];
   for (const session of merged) {
@@ -210,20 +206,21 @@ async function searchRecaps(
       .limit(RECAP_LIMIT),
   ]);
 
-  const merged = mergeUniqueById(
-    [...(titleMatches.data ?? []), ...(slugMatches.data ?? [])] as Array<{
-      id: string;
-      slug: string;
-      title: string;
-      sessions?: {
-        rooms?: {
-          slug?: string;
-          title?: string;
-          public_figures?: { name?: string } | null;
-        } | null;
+  const merged = mergeUniqueById([
+    ...(titleMatches.data ?? []),
+    ...(slugMatches.data ?? []),
+  ] as Array<{
+    id: string;
+    slug: string;
+    title: string;
+    sessions?: {
+      rooms?: {
+        slug?: string;
+        title?: string;
+        public_figures?: { name?: string } | null;
       } | null;
-    }>,
-  ).slice(0, RECAP_LIMIT);
+    } | null;
+  }>).slice(0, RECAP_LIMIT);
 
   const results: CommandPaletteSearchResult[] = [];
   for (const recap of merged) {
@@ -236,9 +233,7 @@ async function searchRecaps(
       type: 'recap' as const,
       group: 'Actions' as CommandPaletteGroup,
       label: recap.title,
-      description: figureName
-        ? `${figureName} · ${room?.title ?? 'Room'}`
-        : 'Public recap',
+      description: figureName ? `${figureName} · ${room?.title ?? 'Room'}` : 'Public recap',
       href: `/recaps/${recap.slug}`,
       metadata: {
         figureName,
@@ -300,7 +295,7 @@ async function searchAssets(
       group: 'Actions' as CommandPaletteGroup,
       label,
       description: descriptionParts.filter(Boolean).join(' · '),
-      href: isPublic ? asset.public_url : roomHref ?? null,
+      href: isPublic ? asset.public_url : (roomHref ?? null),
       metadata: {
         figureName: figure?.name,
         roomTitle: room?.title,
@@ -333,18 +328,20 @@ async function searchTerms(
   const matches: CommandPaletteSearchResult[] = [];
   const seen = new Set<string>();
 
-  (data as Array<{
-    id: string;
-    status?: string | null;
-    rooms?: {
-      slug?: string;
-      title?: string;
-      public_figures?: { slug?: string; name?: string } | null;
-    } | null;
-    session_insights?: {
-      top_terms?: Array<{ term?: string; count?: number }> | null;
-    } | null;
-  }>).forEach((session) => {
+  (
+    data as Array<{
+      id: string;
+      status?: string | null;
+      rooms?: {
+        slug?: string;
+        title?: string;
+        public_figures?: { slug?: string; name?: string } | null;
+      } | null;
+      session_insights?: {
+        top_terms?: Array<{ term?: string; count?: number }> | null;
+      } | null;
+    }>
+  ).forEach((session) => {
     const room = session.rooms;
     const figure = room?.public_figures;
     const href = buildRoomHref(figure?.slug, room?.slug);

@@ -1,4 +1,14 @@
-import { BarChart3, Bug, ClipboardCheck, IdCard, MapPin, Mic2, ShieldCheck, Terminal, UserCheck } from 'lucide-react';
+import {
+  BarChart3,
+  Bug,
+  ClipboardCheck,
+  IdCard,
+  MapPin,
+  Mic2,
+  ShieldCheck,
+  Terminal,
+  UserCheck,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export type Role = 'reporter' | 'moderator' | 'staff' | 'admin_service';

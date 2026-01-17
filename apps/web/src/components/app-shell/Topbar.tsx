@@ -22,9 +22,7 @@ type BreadcrumbEntry = {
 function humanizeSegment(segment: string) {
   try {
     const decoded = decodeURIComponent(segment);
-    return decoded
-      .replace(/-/g, ' ')
-      .replace(/\b\w/g, (char) => char.toUpperCase());
+    return decoded.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
   } catch {
     return segment;
   }
@@ -74,9 +72,7 @@ export default function Topbar({ navItems, quickActions, onOpenPalette, user }: 
           {quickActions.length > 0 ? (
             <div className="flex flex-wrap items-center gap-2">
               {quickActions.map((action) => (
-                <Button key={action.href} variant="ghost" size="sm" className="p-1"
-                  asChild
-                >
+                <Button key={action.href} variant="ghost" size="sm" className="p-1" asChild>
                   <Link href={action.href} prefetch={false}>
                     {action.title}
                   </Link>
@@ -101,7 +97,7 @@ export default function Topbar({ navItems, quickActions, onOpenPalette, user }: 
           </Button>
 
           <details className="relative z-10">
-          <summary className="flex cursor-pointer items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-sm font-semibold text-slate-700 transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none hover:border-slate-300">
+            <summary className="flex cursor-pointer items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-sm font-semibold text-slate-700 transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none hover:border-slate-300">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs uppercase text-slate-800">
                 {userInitial}
               </span>

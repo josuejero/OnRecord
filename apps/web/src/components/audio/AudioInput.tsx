@@ -4,7 +4,10 @@ import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'rea
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { uploadSessionAudio, saveTranscript } from '@/app/(app)/rooms/[figureSlug]/[roomSlug]/actions';
+import {
+  uploadSessionAudio,
+  saveTranscript,
+} from '@/app/(app)/rooms/[figureSlug]/[roomSlug]/actions';
 import { useSpeechRecognition } from './useSpeechRecognition';
 
 type SaveTranscriptAction = (formData: FormData) => Promise<void>;

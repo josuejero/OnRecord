@@ -1,13 +1,7 @@
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Page, PageHeader } from '@/components/layout';
 import { requireRole } from '@/lib/auth/require';
 import { supabaseServer } from '@/lib/supabase/server';

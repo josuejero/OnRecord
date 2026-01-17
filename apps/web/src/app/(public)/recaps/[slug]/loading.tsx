@@ -20,10 +20,10 @@ export default function RecapLoading() {
         <Skeleton className="h-5 w-36" />
         <div className="space-y-3">
           {items.map((item) => (
-          <div
-            key={item}
-            className="space-y-2 rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm"
-          >
+            <div
+              key={item}
+              className="space-y-2 rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm"
+            >
               <Skeleton className="h-3 w-10" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-3 w-3/4" />

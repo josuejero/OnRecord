@@ -19,7 +19,7 @@ export default async function AppLayout({ children }: AppLayoutProps) {
     .eq('user_id', user.id)
     .maybeSingle();
 
-  const resolvedRole = ((profile?.role ?? 'reporter') as Role);
+  const resolvedRole = (profile?.role ?? 'reporter') as Role;
   const navItems = getNavItemsForRole(resolvedRole, process.env.NODE_ENV !== 'production');
 
   const { data: rooms } = await supabase

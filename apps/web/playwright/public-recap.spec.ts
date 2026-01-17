@@ -3,10 +3,7 @@ import { roomPath, buildRecapSlug } from './helpers/rooms';
 import { ensureRecapUnpublished } from './helpers/reset-demo-state';
 import { moderatorState } from './helpers/storage-state';
 
-test('public recap is 404 until published, then becomes public', async ({
-  browser,
-  baseURL,
-}) => {
+test('public recap is 404 until published, then becomes public', async ({ browser, baseURL }) => {
   const modCtx = await browser.newContext({ storageState: moderatorState, baseURL });
   const modPage = await modCtx.newPage();
   await modPage.goto(roomPath);
@@ -30,9 +27,7 @@ test('public recap is 404 until published, then becomes public', async ({
   const res2 = await publicPage.goto(`/recaps/${recapSlug}`);
   expect(res2?.status()).toBe(200);
   await expect(publicPage.getByText(/public recap/i)).toBeVisible();
-  await expect(
-    publicPage.getByRole('heading', { level: 2, name: /q\s*&\s*a/i }),
-  ).toBeVisible();
+  await expect(publicPage.getByRole('heading', { level: 2, name: /q\s*&\s*a/i })).toBeVisible();
 
   await modPage.goto(roomPath);
   await modPage.getByRole('button', { name: 'Unpublish recap' }).click();

@@ -31,13 +31,15 @@ type RoomsIndexClientProps = {
 
 type RoomState = 'live' | 'scheduled' | 'ended' | 'idle';
 
-const stateConfig: Record<RoomState, { label: string; variant: 'secondary' | 'outline' | 'destructive' }> =
-  {
-    live: { label: 'Live', variant: 'destructive' },
-    scheduled: { label: 'Scheduled', variant: 'secondary' },
-    ended: { label: 'Ended', variant: 'outline' },
-    idle: { label: 'Idle', variant: 'outline' },
-  };
+const stateConfig: Record<
+  RoomState,
+  { label: string; variant: 'secondary' | 'outline' | 'destructive' }
+> = {
+  live: { label: 'Live', variant: 'destructive' },
+  scheduled: { label: 'Scheduled', variant: 'secondary' },
+  ended: { label: 'Ended', variant: 'outline' },
+  idle: { label: 'Idle', variant: 'outline' },
+};
 
 const sortOptions: { value: 'activity' | 'title' | 'figure'; label: string }[] = [
   { value: 'activity', label: 'Last activity' },
@@ -211,7 +213,7 @@ export function RoomsIndexClient({ rooms, roomLinkPrefetch }: RoomsIndexClientPr
             return (
               <article
                 key={room.id}
-            className="flex flex-wrap items-center gap-4 rounded-2xl border border-slate-200 bg-white/70 p-4 shadow-sm transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none hover:border-slate-900"
+                className="flex flex-wrap items-center gap-4 rounded-2xl border border-slate-200 bg-white/70 p-4 shadow-sm transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none hover:border-slate-900"
               >
                 <div className="flex-1 min-w-[220px]">
                   <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Figure</p>
@@ -240,7 +242,7 @@ export function RoomsIndexClient({ rooms, roomLinkPrefetch }: RoomsIndexClientPr
           return (
             <article
               key={room.id}
-            className="group rounded-2xl border border-slate-200 bg-white/70 p-5 shadow-sm transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none hover:shadow-lg focus-within:ring-1 focus-within:ring-primary/70"
+              className="group rounded-2xl border border-slate-200 bg-white/70 p-5 shadow-sm transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none hover:shadow-lg focus-within:ring-1 focus-within:ring-primary/70"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -262,7 +264,7 @@ export function RoomsIndexClient({ rooms, roomLinkPrefetch }: RoomsIndexClientPr
               </div>
               <div className="mt-4 flex items-center justify-between gap-3">
                 <Link
-                className="text-sm font-semibold text-primary underline-offset-4 transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2"
+                  className="text-sm font-semibold text-primary underline-offset-4 transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2"
                   href={roomUrl}
                   prefetch={roomLinkPrefetch}
                 >

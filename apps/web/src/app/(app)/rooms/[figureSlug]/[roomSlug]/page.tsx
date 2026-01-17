@@ -22,10 +22,7 @@ import { startSession, endSession } from './actions';
 
 const isE2E = process.env.NEXT_PUBLIC_E2E === '1';
 
-async function fetchLiveSession(
-  roomId: string,
-  supabase: ReturnType<typeof supabaseServer>,
-) {
+async function fetchLiveSession(roomId: string, supabase: ReturnType<typeof supabaseServer>) {
   const { data: session } = await supabase
     .from('sessions')
     .select('*')
@@ -123,14 +120,10 @@ export default async function RoomPage({ params, searchParams }: PageProps) {
 
   const getLiveSession = isE2E
     ? async () => fetchLiveSession(room.id, supabase)
-    : unstable_cache(
-        async () => fetchLiveSession(room.id, supabase),
-        [`liveSession:${room.id}`],
-        {
-          revalidate: 5,
-          tags: [`room:${room.id}:liveSession`],
-        },
-      );
+    : unstable_cache(async () => fetchLiveSession(room.id, supabase), [`liveSession:${room.id}`], {
+        revalidate: 5,
+        tags: [`room:${room.id}:liveSession`],
+      });
 
   const getCachedLatestSession = unstable_cache(
     async () => {
@@ -186,9 +179,7 @@ export default async function RoomPage({ params, searchParams }: PageProps) {
   }
 
   const revalidatePath = `/rooms/${figureSlug}/${roomSlug}`;
-  const queueCounts = session
-    ? await loadQueueCounts(session.id, supabase)
-    : EMPTY_QUEUE_COUNTS;
+  const queueCounts = session ? await loadQueueCounts(session.id, supabase) : EMPTY_QUEUE_COUNTS;
 
   const headerDescription = <div className="text-sm text-muted-foreground">{figure.name}</div>;
 
@@ -356,29 +347,32 @@ async function loadQueueCounts(
     throw new Error(error.message);
   }
 
-  return (data ?? []).reduce<QueueCounts>((acc, row) => {
-    if (row.status === 'needs_edit') {
-      acc.needsEdit += 1;
+  return (data ?? []).reduce<QueueCounts>(
+    (acc, row) => {
+      if (row.status === 'needs_edit') {
+        acc.needsEdit += 1;
+        return acc;
+      }
+      if (row.status === 'pending') {
+        acc.pending += 1;
+        return acc;
+      }
+      if (row.status === 'approved') {
+        acc.approved += 1;
+        return acc;
+      }
+      if (row.status === 'answered') {
+        acc.answered += 1;
+        return acc;
+      }
+      if (row.status === 'rejected') {
+        acc.rejected += 1;
+        return acc;
+      }
       return acc;
-    }
-    if (row.status === 'pending') {
-      acc.pending += 1;
-      return acc;
-    }
-    if (row.status === 'approved') {
-      acc.approved += 1;
-      return acc;
-    }
-    if (row.status === 'answered') {
-      acc.answered += 1;
-      return acc;
-    }
-    if (row.status === 'rejected') {
-      acc.rejected += 1;
-      return acc;
-    }
-    return acc;
-  }, { ...EMPTY_QUEUE_COUNTS });
+    },
+    { ...EMPTY_QUEUE_COUNTS },
+  );
 }
 
 function StickySessionHeader({
@@ -393,7 +387,8 @@ function StickySessionHeader({
   room: CachedRoom['room'];
 }) {
   const pendingTotal = queueCounts.pending + queueCounts.needsEdit;
-  const stateLabel = session.status === 'live' ? 'Live' : session.status === 'scheduled' ? 'Scheduled' : 'Ended';
+  const stateLabel =
+    session.status === 'live' ? 'Live' : session.status === 'scheduled' ? 'Scheduled' : 'Ended';
   const startTimestamp = formatTimestamp(session.starts_at);
   const elapsed = formatElapsed(session.starts_at, session.ends_at, isLive);
 
@@ -406,8 +401,8 @@ function StickySessionHeader({
             <Badge variant="secondary">{stateLabel}</Badge>
           </div>
           <p className="text-xs text-slate-500">
-            Starts: <span className="font-semibold text-slate-900">{startTimestamp}</span>{' '}
-            · Elapsed: <span className="font-semibold text-slate-900">{elapsed}</span>
+            Starts: <span className="font-semibold text-slate-900">{startTimestamp}</span> ·
+            Elapsed: <span className="font-semibold text-slate-900">{elapsed}</span>
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-slate-600">
@@ -436,7 +431,10 @@ function SessionCounter({
 }) {
   return (
     <div className="flex flex-col items-start gap-1">
-      <span className="text-xs font-semibold text-slate-900" data-testid={`queue-count-${label.toLowerCase()}`}>
+      <span
+        className="text-xs font-semibold text-slate-900"
+        data-testid={`queue-count-${label.toLowerCase()}`}
+      >
         {value}
       </span>
       <span className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-500">{label}</span>
@@ -467,11 +465,17 @@ function SessionControlSection({
   const isLive = Boolean(live);
 
   return (
-    <Panel className={cn('flex flex-col overflow-hidden', className)} header={<PanelHeader title="Session controls" description={`Session ID: ${session?.id ?? ''}`} />}>
+    <Panel
+      className={cn('flex flex-col overflow-hidden', className)}
+      header={
+        <PanelHeader title="Session controls" description={`Session ID: ${session?.id ?? ''}`} />
+      }
+    >
       <div className={panelBodyClass}>
         <div className="space-y-3">
           <p className="text-sm text-slate-600">
-            Current status: <span className="font-semibold text-slate-900">{session?.status ?? '—'}</span>
+            Current status:{' '}
+            <span className="font-semibold text-slate-900">{session?.status ?? '—'}</span>
           </p>
           <p className="text-xs text-slate-500">
             Room controlled by {figure.name} · {room.title}
@@ -522,7 +526,11 @@ function QueuePanel({
         header={<PanelHeader title="Queue" description="Track questions and moderation" />}
       >
         <div className={panelBodyClass}>
-          <QuestionQueueClient sessionId={sessionId} activeSessionId={activeSessionId} role={role} />
+          <QuestionQueueClient
+            sessionId={sessionId}
+            activeSessionId={activeSessionId}
+            role={role}
+          />
         </div>
       </Panel>
     </PanelErrorBoundary>

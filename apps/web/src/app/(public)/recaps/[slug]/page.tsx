@@ -64,7 +64,7 @@ function formatDateTime(value: string | null | undefined) {
 function groupAssetsByType(assets: Asset[]) {
   return assets.reduce<Record<string, Asset[]>>((groups, asset) => {
     const category = asset.mime_type?.split('/')[0] ?? 'other';
-    const normalized = ASSET_ORDER.includes(category as typeof ASSET_ORDER[number])
+    const normalized = ASSET_ORDER.includes(category as (typeof ASSET_ORDER)[number])
       ? category
       : 'other';
     if (!groups[normalized]) {
@@ -181,12 +181,11 @@ export default async function RecapPage({ params }: { params: Promise<{ slug: st
             <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-6 text-sm text-slate-600">
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Session timeline</p>
               <p className="font-semibold text-slate-900">
-                {formatDateTime(recap.starts_at)} — {recap.ends_at ? formatDateTime(recap.ends_at) : 'Ongoing'}
+                {formatDateTime(recap.starts_at)} —{' '}
+                {recap.ends_at ? formatDateTime(recap.ends_at) : 'Ongoing'}
               </p>
             </div>
-            {recap.summary ? (
-              <p className="text-lg text-slate-700">{recap.summary}</p>
-            ) : null}
+            {recap.summary ? <p className="text-lg text-slate-700">{recap.summary}</p> : null}
           </section>
 
           <section id="qa" className="space-y-6">
@@ -235,9 +234,7 @@ export default async function RecapPage({ params }: { params: Promise<{ slug: st
                 return (
                   <div key={type} className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-slate-900">
-                        {ASSET_LABELS[type]}
-                      </h3>
+                      <h3 className="text-lg font-semibold text-slate-900">{ASSET_LABELS[type]}</h3>
                       <span className="text-xs uppercase tracking-[0.3em] text-slate-400">
                         {group.length} item{group.length === 1 ? '' : 's'}
                       </span>

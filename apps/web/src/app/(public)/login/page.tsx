@@ -111,10 +111,7 @@ export default function LoginPage() {
           <div data-testid="login-signed-in" className="text-sm font-medium">
             Signed in
           </div>
-          <div
-            data-testid="login-signed-in-email"
-            className="text-sm opacity-80"
-          >
+          <div data-testid="login-signed-in-email" className="text-sm opacity-80">
             {signedInEmail}
           </div>
         </section>

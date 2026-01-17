@@ -115,13 +115,9 @@ function QueueRow({
               <span key={`${item}-${idx}`}>{item}</span>
             ))}
           </div>
-          <div className="flex items-center gap-2 text-xs">
-            {statusBadge(question.status)}
-          </div>
+          <div className="flex items-center gap-2 text-xs">{statusBadge(question.status)}</div>
         </div>
-        {actions ? (
-          <div className="flex flex-wrap items-center gap-1">{actions}</div>
-        ) : null}
+        {actions ? <div className="flex flex-wrap items-center gap-1">{actions}</div> : null}
       </div>
     </div>
   );
@@ -569,7 +565,10 @@ export function QuestionQueueClient({
     );
   }
 
-  const historyQueue = [...answeredQueue, ...orderedQuestions.filter((q) => q.status === 'rejected')];
+  const historyQueue = [
+    ...answeredQueue,
+    ...orderedQuestions.filter((q) => q.status === 'rejected'),
+  ];
 
   return (
     <div className="space-y-6">
@@ -583,7 +582,9 @@ export function QuestionQueueClient({
       <div className="flex items-center justify-between text-[0.65rem] uppercase tracking-[0.3em] text-slate-500">
         <div className="flex items-center gap-2">
           <span className={cn('h-2 w-2 rounded-full', statusMeta.dot)} aria-hidden />
-          <span className={cn('font-semibold text-slate-600', statusMeta.text)}>{statusMeta.label}</span>
+          <span className={cn('font-semibold text-slate-600', statusMeta.text)}>
+            {statusMeta.label}
+          </span>
         </div>
         <span>Realtime</span>
       </div>
@@ -628,13 +629,9 @@ export function QuestionQueueClient({
         <div className="space-y-5">
           <Tabs defaultValue="moderation">
             <TabsList className="rounded-full border border-slate-200 bg-white p-1 text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-slate-500 shadow-sm">
-              <TabsTrigger value="moderation">
-                Moderation ({moderationQueue.length})
-              </TabsTrigger>
+              <TabsTrigger value="moderation">Moderation ({moderationQueue.length})</TabsTrigger>
               <TabsTrigger value="approved">Approved ({approvedQueue.length})</TabsTrigger>
-              <TabsTrigger value="history">
-                History ({historyQueue.length})
-              </TabsTrigger>
+              <TabsTrigger value="history">History ({historyQueue.length})</TabsTrigger>
             </TabsList>
 
             <TabsContent value="moderation">

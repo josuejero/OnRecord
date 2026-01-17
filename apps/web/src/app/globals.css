@@ -70,16 +70,7 @@
     color: inherit;
   }
 
-  :is(
-    a,
-    button,
-    input,
-    textarea,
-    select,
-    summary,
-    [role='button'],
-    [tabindex]
-  ):focus-visible {
+  :is(a, button, input, textarea, select, summary, [role='button'], [tabindex]):focus-visible {
     position: relative;
     z-index: 1;
     outline: 2px solid hsl(var(--ring));

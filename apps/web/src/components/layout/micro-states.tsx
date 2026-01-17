@@ -32,7 +32,9 @@ type EmptyPanelProps = {
 export function EmptyPanel({ icon, title, description, action, className }: EmptyPanelProps) {
   return (
     <Panel className={cn('text-center space-y-3', className)}>
-      {icon ? <div className="mx-auto flex h-14 w-14 items-center justify-center">{icon}</div> : null}
+      {icon ? (
+        <div className="mx-auto flex h-14 w-14 items-center justify-center">{icon}</div>
+      ) : null}
       <div className="space-y-2">
         <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
         {description ? <p className="text-sm text-slate-500">{description}</p> : null}

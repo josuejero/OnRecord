@@ -44,7 +44,10 @@ export function TranscriptViewer({
     [labels],
   );
 
-  const segments = useMemo(() => buildSegments(sourceText, normalizedLabels), [normalizedLabels, sourceText]);
+  const segments = useMemo(
+    () => buildSegments(sourceText, normalizedLabels),
+    [normalizedLabels, sourceText],
+  );
   const matchCount = useMemo(() => {
     if (!searchTerm) return 0;
     const regex = new RegExp(escapeRegExp(searchTerm), 'gi');
@@ -98,19 +101,29 @@ export function TranscriptViewer({
         </div>
       </div>
 
-      <div ref={transcriptRef} className="flex-1 min-h-0 overflow-auto rounded-2xl border border-slate-200 bg-white p-4 text-sm leading-relaxed text-slate-800">
+      <div
+        ref={transcriptRef}
+        className="flex-1 min-h-0 overflow-auto rounded-2xl border border-slate-200 bg-white p-4 text-sm leading-relaxed text-slate-800"
+      >
         {segments.length ? (
           segments.map((segment, idx) => (
             <span
               key={`${segment.text.slice(0, 10)}-${idx}`}
-              className={cn('block whitespace-pre-wrap', segment.label ? 'rounded-md border border-emerald-200 bg-emerald-50/70 px-1 py-[0.15rem]' : '')}
+              className={cn(
+                'block whitespace-pre-wrap',
+                segment.label
+                  ? 'rounded-md border border-emerald-200 bg-emerald-50/70 px-1 py-[0.15rem]'
+                  : '',
+              )}
               data-label-type={segment.label?.label_type}
             >
               {highlightMatches(segment.text, searchTerm)}
             </span>
           ))
         ) : (
-          <div className="text-xs text-muted-foreground">Transcript will appear here once saved.</div>
+          <div className="text-xs text-muted-foreground">
+            Transcript will appear here once saved.
+          </div>
         )}
       </div>
 
@@ -122,11 +135,12 @@ export function TranscriptViewer({
           </div>
           <div className="space-y-1 text-emerald-900/90">
             {normalizedLabels.map((label) => (
-              <div key={`${label.label_type}-${label.start_offset}-${label.end_offset}`} className="flex flex-wrap items-center justify-between gap-3">
+              <div
+                key={`${label.label_type}-${label.start_offset}-${label.end_offset}`}
+                className="flex flex-wrap items-center justify-between gap-3"
+              >
                 <span className="font-semibold">{label.label_type.replace(/_/g, ' ')}</span>
-                <span className="text-emerald-800/80">
-                  {label.label_value ?? 'flagged span'}
-                </span>
+                <span className="text-emerald-800/80">{label.label_value ?? 'flagged span'}</span>
               </div>
             ))}
           </div>
@@ -182,7 +196,10 @@ function highlightMatches(text: string, term: string) {
     const prefix = text.slice(lastIndex, match.index);
     if (prefix) parts.push(prefix);
     parts.push(
-      <mark key={`${match.index}-${match[0]}`} className="rounded bg-amber-200 px-[0.15rem] text-amber-800">
+      <mark
+        key={`${match.index}-${match[0]}`}
+        className="rounded bg-amber-200 px-[0.15rem] text-amber-800"
+      >
         {match[0]}
       </mark>,
     );

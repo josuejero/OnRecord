@@ -72,16 +72,15 @@ const CommandSeparator = React.forwardRef<
 ));
 CommandSeparator.displayName = 'CommandSeparator';
 
-const CommandShortcut = React.forwardRef<
-  HTMLSpanElement,
-  React.ComponentPropsWithoutRef<'span'>
->(({ className, ...props }, ref) => (
-  <span
-    ref={ref}
-    className={cn('text-[0.6rem] uppercase tracking-[0.3em] text-slate-500', className)}
-    {...props}
-  />
-));
+const CommandShortcut = React.forwardRef<HTMLSpanElement, React.ComponentPropsWithoutRef<'span'>>(
+  ({ className, ...props }, ref) => (
+    <span
+      ref={ref}
+      className={cn('text-[0.6rem] uppercase tracking-[0.3em] text-slate-500', className)}
+      {...props}
+    />
+  ),
+);
 CommandShortcut.displayName = 'CommandShortcut';
 
 export {

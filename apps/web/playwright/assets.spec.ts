@@ -45,11 +45,7 @@ test('private asset does not appear on public recap', async ({ page, baseURL }) 
   await ctx.close();
 });
 
-test('public asset shows on recap and is publicly readable', async ({
-  page,
-  request,
-  baseURL,
-}) => {
+test('public asset shows on recap and is publicly readable', async ({ page, request, baseURL }) => {
   await page.goto(roomPath);
 
   const sessionId = (await page.getByTestId('session-id').textContent()) ?? '';

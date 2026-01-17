@@ -29,10 +29,12 @@ export default function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname() ?? '/';
 
-  const sections: Array<{ group: NavGroup; items: AppNavItem[] }> = NAV_SECTION_ORDER.map((group) => ({
-    group,
-    items: navItems.filter((item) => item.group === group),
-  }));
+  const sections: Array<{ group: NavGroup; items: AppNavItem[] }> = NAV_SECTION_ORDER.map(
+    (group) => ({
+      group,
+      items: navItems.filter((item) => item.group === group),
+    }),
+  );
 
   const userLabel = user.displayName ?? user.email ?? 'Signed in';
   const userInitial = userLabel.charAt(0).toUpperCase();
@@ -48,7 +50,9 @@ export default function Sidebar({
       )}
     >
       <div className="flex items-center justify-between border-b border-slate-100 px-3 py-3">
-        <span className={cn('text-lg font-semibold tracking-tight', collapsed && 'sr-only')}>OnRecord</span>
+        <span className={cn('text-lg font-semibold tracking-tight', collapsed && 'sr-only')}>
+          OnRecord
+        </span>
         <button
           type="button"
           aria-label={collapsed ? 'Expand navigation panel' : 'Collapse navigation panel'}
@@ -74,8 +78,7 @@ export default function Sidebar({
               </p>
               <div className="mt-2 space-y-1">
                 {section.items.map((item) => {
-                  const isActive =
-                    pathname === item.href || pathname.startsWith(`${item.href}/`);
+                  const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
                   return (
                     <Link
@@ -93,7 +96,9 @@ export default function Sidebar({
                       )}
                     >
                       <item.icon className="h-4 w-4 flex-none" aria-hidden="true" />
-                      <span className={cn('ml-3 truncate', collapsed && 'sr-only')}>{item.title}</span>
+                      <span className={cn('ml-3 truncate', collapsed && 'sr-only')}>
+                        {item.title}
+                      </span>
                     </Link>
                   );
                 })}
@@ -113,7 +118,9 @@ export default function Sidebar({
             <p className="text-xs text-slate-500">{role}</p>
           </div>
         </div>
-        <div className={cn('mt-3 flex flex-wrap items-center gap-2', collapsed && 'justify-center')}>
+        <div
+          className={cn('mt-3 flex flex-wrap items-center gap-2', collapsed && 'justify-center')}
+        >
           <Badge variant="secondary" className="text-[10px]">
             {role}
           </Badge>
@@ -121,7 +128,12 @@ export default function Sidebar({
             {environmentLabel}
           </Badge>
         </div>
-        <details className={cn('mt-3 rounded-md border border-slate-100 bg-slate-50 p-2', collapsed && 'sr-only')}>
+        <details
+          className={cn(
+            'mt-3 rounded-md border border-slate-100 bg-slate-50 p-2',
+            collapsed && 'sr-only',
+          )}
+        >
           <summary className="flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-700">
             <User2 className="h-4 w-4 text-slate-500" />
             Account

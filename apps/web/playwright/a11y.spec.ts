@@ -22,7 +22,10 @@ test('public landing page has no serious/critical a11y violations', async ({ pag
   await expectNoSeriousViolations(page);
 });
 
-test('app shell rooms view has no serious/critical a11y violations', async ({ browser, baseURL }) => {
+test('app shell rooms view has no serious/critical a11y violations', async ({
+  browser,
+  baseURL,
+}) => {
   const shellContext = await browser.newContext({
     storageState: reporterState,
     baseURL,
@@ -34,7 +37,10 @@ test('app shell rooms view has no serious/critical a11y violations', async ({ br
   await shellContext.close();
 });
 
-test('room workstation page has no serious/critical a11y violations', async ({ browser, baseURL }) => {
+test('room workstation page has no serious/critical a11y violations', async ({
+  browser,
+  baseURL,
+}) => {
   const roomContext = await browser.newContext({
     storageState: moderatorState,
     baseURL,

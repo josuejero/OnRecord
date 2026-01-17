@@ -175,13 +175,18 @@ export function InsightsTableClient({ sessions, roomLinkPrefetch }: InsightsTabl
               className="min-w-[220px] flex-1"
             />
             <div className="flex items-center gap-2">
-              <label className="text-xs uppercase tracking-[0.3em] text-muted-foreground" htmlFor="status-filter">
+              <label
+                className="text-xs uppercase tracking-[0.3em] text-muted-foreground"
+                htmlFor="status-filter"
+              >
                 Status
               </label>
               <select
                 id="status-filter"
                 value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value as (typeof STATUS_FILTERS)[number])}
+                onChange={(event) =>
+                  setStatusFilter(event.target.value as (typeof STATUS_FILTERS)[number])
+                }
                 className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
               >
                 {STATUS_FILTERS.map((value) => (
@@ -219,7 +224,9 @@ export function InsightsTableClient({ sessions, roomLinkPrefetch }: InsightsTabl
               </Button>
             </div>
             <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white/80 px-2 py-1 text-xs text-slate-500">
-              <span className="uppercase tracking-[0.3em] text-[0.65rem] text-slate-400">Density</span>
+              <span className="uppercase tracking-[0.3em] text-[0.65rem] text-slate-400">
+                Density
+              </span>
               <Button
                 variant={density === 'default' ? 'secondary' : 'ghost'}
                 size="sm"
@@ -251,135 +258,135 @@ export function InsightsTableClient({ sessions, roomLinkPrefetch }: InsightsTabl
         className="min-w-full"
       >
         <TableHeader>
-        <TableRow>
-          <TableHead>Room</TableHead>
-          <TableHead
-            aria-sort={
-              sortKey === 'activity'
-                ? sortDirection === 'desc'
-                  ? 'descending'
-                  : 'ascending'
-                : 'none'
-            }
-          >
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 font-semibold text-slate-900"
-              onClick={() => handleSortHeader('activity')}
+          <TableRow>
+            <TableHead>Room</TableHead>
+            <TableHead
+              aria-sort={
+                sortKey === 'activity'
+                  ? sortDirection === 'desc'
+                    ? 'descending'
+                    : 'ascending'
+                  : 'none'
+              }
             >
-              Session
-              <ArrowDownUp
-                className={cn(
-                  'h-3 w-3 transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none',
-                  sortKey === 'activity' ? 'text-slate-900' : 'text-slate-400',
-                )}
-                aria-hidden
-              />
-            </button>
-          </TableHead>
-          <TableHead
-            className="text-right"
-            aria-sort={
-              sortKey === 'answered'
-                ? sortDirection === 'desc'
-                  ? 'descending'
-                  : 'ascending'
-                : 'none'
-            }
-          >
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 font-semibold text-slate-900"
-              onClick={() => handleSortHeader('answered')}
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 font-semibold text-slate-900"
+                onClick={() => handleSortHeader('activity')}
+              >
+                Session
+                <ArrowDownUp
+                  className={cn(
+                    'h-3 w-3 transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none',
+                    sortKey === 'activity' ? 'text-slate-900' : 'text-slate-400',
+                  )}
+                  aria-hidden
+                />
+              </button>
+            </TableHead>
+            <TableHead
+              className="text-right"
+              aria-sort={
+                sortKey === 'answered'
+                  ? sortDirection === 'desc'
+                    ? 'descending'
+                    : 'ascending'
+                  : 'none'
+              }
             >
-              Answered
-              <ArrowDownUp
-                className={cn(
-                  'h-3 w-3 transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none',
-                  sortKey === 'answered' ? 'text-slate-900' : 'text-slate-400',
-                )}
-                aria-hidden
-              />
-            </button>
-          </TableHead>
-          <TableHead
-            className="text-right"
-            aria-sort={
-              sortKey === 'rejected'
-                ? sortDirection === 'desc'
-                  ? 'descending'
-                  : 'ascending'
-                : 'none'
-            }
-          >
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 font-semibold text-slate-900"
-              onClick={() => handleSortHeader('rejected')}
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 font-semibold text-slate-900"
+                onClick={() => handleSortHeader('answered')}
+              >
+                Answered
+                <ArrowDownUp
+                  className={cn(
+                    'h-3 w-3 transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none',
+                    sortKey === 'answered' ? 'text-slate-900' : 'text-slate-400',
+                  )}
+                  aria-hidden
+                />
+              </button>
+            </TableHead>
+            <TableHead
+              className="text-right"
+              aria-sort={
+                sortKey === 'rejected'
+                  ? sortDirection === 'desc'
+                    ? 'descending'
+                    : 'ascending'
+                  : 'none'
+              }
             >
-              Rejected
-              <ArrowDownUp
-                className={cn(
-                  'h-3 w-3 transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none',
-                  sortKey === 'rejected' ? 'text-slate-900' : 'text-slate-400',
-                )}
-                aria-hidden
-              />
-            </button>
-          </TableHead>
-          <TableHead
-            className="text-right"
-            aria-sort={
-              sortKey === 'rejection_rate'
-                ? sortDirection === 'desc'
-                  ? 'descending'
-                  : 'ascending'
-                : 'none'
-            }
-          >
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 font-semibold text-slate-900"
-              onClick={() => handleSortHeader('rejection_rate')}
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 font-semibold text-slate-900"
+                onClick={() => handleSortHeader('rejected')}
+              >
+                Rejected
+                <ArrowDownUp
+                  className={cn(
+                    'h-3 w-3 transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none',
+                    sortKey === 'rejected' ? 'text-slate-900' : 'text-slate-400',
+                  )}
+                  aria-hidden
+                />
+              </button>
+            </TableHead>
+            <TableHead
+              className="text-right"
+              aria-sort={
+                sortKey === 'rejection_rate'
+                  ? sortDirection === 'desc'
+                    ? 'descending'
+                    : 'ascending'
+                  : 'none'
+              }
             >
-              Rejection rate
-              <ArrowDownUp
-                className={cn(
-                  'h-3 w-3 transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none',
-                  sortKey === 'rejection_rate' ? 'text-slate-900' : 'text-slate-400',
-                )}
-                aria-hidden
-              />
-            </button>
-          </TableHead>
-          <TableHead
-            className="text-right"
-            aria-sort={
-              sortKey === 'avg_time'
-                ? sortDirection === 'desc'
-                  ? 'descending'
-                  : 'ascending'
-                : 'none'
-            }
-          >
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 font-semibold text-slate-900"
-              onClick={() => handleSortHeader('avg_time')}
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 font-semibold text-slate-900"
+                onClick={() => handleSortHeader('rejection_rate')}
+              >
+                Rejection rate
+                <ArrowDownUp
+                  className={cn(
+                    'h-3 w-3 transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none',
+                    sortKey === 'rejection_rate' ? 'text-slate-900' : 'text-slate-400',
+                  )}
+                  aria-hidden
+                />
+              </button>
+            </TableHead>
+            <TableHead
+              className="text-right"
+              aria-sort={
+                sortKey === 'avg_time'
+                  ? sortDirection === 'desc'
+                    ? 'descending'
+                    : 'ascending'
+                  : 'none'
+              }
             >
-              Avg time-to-answer
-              <ArrowDownUp
-                className={cn(
-                  'h-3 w-3 transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none',
-                  sortKey === 'avg_time' ? 'text-slate-900' : 'text-slate-400',
-                )}
-                aria-hidden
-              />
-            </button>
-          </TableHead>
-          <TableHead>Top terms</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
-        </TableRow>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 font-semibold text-slate-900"
+                onClick={() => handleSortHeader('avg_time')}
+              >
+                Avg time-to-answer
+                <ArrowDownUp
+                  className={cn(
+                    'h-3 w-3 transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none',
+                    sortKey === 'avg_time' ? 'text-slate-900' : 'text-slate-400',
+                  )}
+                  aria-hidden
+                />
+              </button>
+            </TableHead>
+            <TableHead>Top terms</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
         </TableHeader>
         <TableBody>
           {filteredRows.map((row) => {
@@ -402,7 +409,9 @@ export function InsightsTableClient({ sessions, roomLinkPrefetch }: InsightsTabl
                       {buildSessionLabel(row.status)}
                     </Badge>
                     <span className="text-xs text-slate-500">
-                      {row.computedAt ? DATE_FORMATTER.format(new Date(row.computedAt)) : 'No insights yet'}
+                      {row.computedAt
+                        ? DATE_FORMATTER.format(new Date(row.computedAt))
+                        : 'No insights yet'}
                     </span>
                   </div>
                 </TableCell>

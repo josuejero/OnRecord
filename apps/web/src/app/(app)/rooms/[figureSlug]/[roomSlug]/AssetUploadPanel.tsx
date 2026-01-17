@@ -1,9 +1,6 @@
 import { uploadAsset } from './actions';
 
-export function AssetUploadPanel(props: {
-  sessionId: string;
-  revalidatePath: string;
-}) {
+export function AssetUploadPanel(props: { sessionId: string; revalidatePath: string }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-slate-600">
@@ -19,7 +16,9 @@ export function AssetUploadPanel(props: {
         <input type="hidden" name="revalidate_path" value={props.revalidatePath} />
 
         <div className="space-y-2 text-sm">
-          <label className="block text-xs uppercase tracking-[0.3em] text-slate-400">Visibility</label>
+          <label className="block text-xs uppercase tracking-[0.3em] text-slate-400">
+            Visibility
+          </label>
           <select
             name="visibility"
             defaultValue="public"
@@ -51,9 +50,7 @@ export function AssetUploadPanel(props: {
         </button>
       </form>
 
-      <p className="text-xs text-slate-500">
-        Accepted: image/pdf/txt. Max 25MB per file.
-      </p>
+      <p className="text-xs text-slate-500">Accepted: image/pdf/txt. Max 25MB per file.</p>
     </div>
   );
 }

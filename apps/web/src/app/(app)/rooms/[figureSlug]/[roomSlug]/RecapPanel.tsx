@@ -126,7 +126,9 @@ export function RecapPanel({ sessionId, revalidatePath, recaps, featureFlags }: 
         </div>
         <p className="text-xs text-muted-foreground">
           Provider: {featureFlags.aiRecapProvider} ·{' '}
-          {selectedRecap ? 'Structured output saved as a draft' : 'Run generation to create a recap'}
+          {selectedRecap
+            ? 'Structured output saved as a draft'
+            : 'Run generation to create a recap'}
         </p>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -272,9 +274,7 @@ export function RecapPanel({ sessionId, revalidatePath, recaps, featureFlags }: 
               <QASection number="S" title="Safety notes" quiet>
                 <p className="text-slate-900">{selectedRecap.recap.safety_notes}</p>
                 {selectedRecap.recap.verification_notes ? (
-                  <p className="text-xs text-slate-500">
-                    {selectedRecap.recap.verification_notes}
-                  </p>
+                  <p className="text-xs text-slate-500">{selectedRecap.recap.verification_notes}</p>
                 ) : null}
               </QASection>
             </div>
@@ -285,7 +285,9 @@ export function RecapPanel({ sessionId, revalidatePath, recaps, featureFlags }: 
                 <div>Model: {selectedRecap.recap.model_info.model_id}</div>
                 <div>Prompt version: {selectedRecap.recap.model_info.prompt_version}</div>
                 <div>Hardware: {selectedRecap.recap.model_info.hardware ?? 'cpu'}</div>
-                <div>Executed: {new Date(selectedRecap.recap.model_info.executed_at).toLocaleString()}</div>
+                <div>
+                  Executed: {new Date(selectedRecap.recap.model_info.executed_at).toLocaleString()}
+                </div>
                 <div>Generated: {new Date(selectedRecap.created_at).toLocaleString()}</div>
               </div>
             </div>

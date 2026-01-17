@@ -14,10 +14,7 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import type { AppNavItem } from './nav';
-import type {
-  CommandPaletteGroup,
-  CommandPaletteSearchResult,
-} from '@/types/command-palette';
+import type { CommandPaletteGroup, CommandPaletteSearchResult } from '@/types/command-palette';
 
 const REMOTE_MIN_QUERY_LENGTH = 2;
 
@@ -44,9 +41,7 @@ export default function CommandPalette({
 }: CommandPaletteProps) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
-  const [remoteResults, setRemoteResults] = useState<CommandPaletteSearchResult[]>(
-    [],
-  );
+  const [remoteResults, setRemoteResults] = useState<CommandPaletteSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
   const normalizedQuery = searchTerm.trim().toLowerCase();
@@ -101,8 +96,7 @@ export default function CommandPalette({
     [localActionCommands, normalizedQuery],
   );
 
-  const emptyMessage =
-    shouldSearchRemote && isSearching ? 'Searching…' : 'No matches found.';
+  const emptyMessage = shouldSearchRemote && isSearching ? 'Searching…' : 'No matches found.';
 
   useEffect(() => {
     const handleKeydown = (event: KeyboardEvent) => {

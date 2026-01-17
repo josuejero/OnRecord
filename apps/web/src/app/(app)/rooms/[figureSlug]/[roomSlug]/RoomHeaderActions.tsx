@@ -18,7 +18,8 @@ export function RoomHeaderActions() {
     const target = document.getElementById('queue-panel');
     if (!target) return;
     const prefersReducedMotion =
-      typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     target.scrollIntoView({
       behavior: prefersReducedMotion ? 'auto' : 'smooth',
       block: 'start',
@@ -54,7 +55,9 @@ export function RoomHeaderActions() {
         <DialogContent data-testid="room-search-dialog">
           <DialogHeader>
             <DialogTitle>Search transcript</DialogTitle>
-            <DialogDescription>Find keywords or labels in the current transcript.</DialogDescription>
+            <DialogDescription>
+              Find keywords or labels in the current transcript.
+            </DialogDescription>
           </DialogHeader>
           <TranscriptSearchBar />
         </DialogContent>

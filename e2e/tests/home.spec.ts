@@ -23,7 +23,9 @@ test('room header actions support keyboard navigation', async ({ page }, testInf
 
   const focusSearchTrigger = async () => {
     for (let i = 0; i < 30; i += 1) {
-      const activeId = await page.evaluate(() => document.activeElement?.getAttribute('data-testid'));
+      const activeId = await page.evaluate(() =>
+        document.activeElement?.getAttribute('data-testid'),
+      );
       if (activeId === 'room-search-trigger') {
         return;
       }

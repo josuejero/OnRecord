@@ -37,13 +37,7 @@ type TableProps = React.HTMLAttributes<HTMLTableElement> &
     stickyHeader?: boolean;
   };
 
-export function Table({
-  className,
-  containerClassName,
-  size,
-  stickyHeader,
-  ...props
-}: TableProps) {
+export function Table({ className, containerClassName, size, stickyHeader, ...props }: TableProps) {
   return (
     <TableContext.Provider value={{ size: size ?? 'md', stickyHeader: Boolean(stickyHeader) }}>
       <div className={cn('w-full overflow-auto', containerClassName)}>
@@ -71,10 +65,7 @@ export function TableHeader({
   );
 }
 
-export function TableBody({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLTableSectionElement>) {
+export function TableBody({ className, ...props }: React.HTMLAttributes<HTMLTableSectionElement>) {
   return <tbody className={cn('[&_tr:last-child]:border-0', className)} {...props} />;
 }
 
@@ -83,14 +74,14 @@ export function TableFooter({
   ...props
 }: React.HTMLAttributes<HTMLTableSectionElement>) {
   return (
-    <tfoot className={cn('border-t bg-muted/50 font-medium [&>tr]:last:border-b-0', className)} {...props} />
+    <tfoot
+      className={cn('border-t bg-muted/50 font-medium [&>tr]:last:border-b-0', className)}
+      {...props}
+    />
   );
 }
 
-export function TableRow({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLTableRowElement>) {
+export function TableRow({ className, ...props }: React.HTMLAttributes<HTMLTableRowElement>) {
   return (
     <tr
       className={cn(
@@ -102,10 +93,7 @@ export function TableRow({
   );
 }
 
-export function TableHead({
-  className,
-  ...props
-}: React.ThHTMLAttributes<HTMLTableCellElement>) {
+export function TableHead({ className, ...props }: React.ThHTMLAttributes<HTMLTableCellElement>) {
   const ctx = React.useContext(TableContext);
 
   return (
@@ -122,10 +110,7 @@ export function TableHead({
   );
 }
 
-export function TableCell({
-  className,
-  ...props
-}: React.TdHTMLAttributes<HTMLTableCellElement>) {
+export function TableCell({ className, ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) {
   const ctx = React.useContext(TableContext);
 
   return (
