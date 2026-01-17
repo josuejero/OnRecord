@@ -1,11 +1,45 @@
 @import 'tailwindcss';
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-border: #e2e8f0;
-  --muted: #64748b;
+  /* Semantic palette driven by HSL triples for easy theming */
+  --background: 0 0% 98%;
+  --foreground: 222 47% 11%;
+  --panel: 0 0% 100%;
+  --panel-foreground: 222 47% 11%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --border: 214 32% 91%;
+  --border-strong: 214 31% 84%;
+  --accent: 222 47% 11%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+  --success: 145 63% 49%;
+  --success-foreground: 210 40% 98%;
+  --ring: 222 47% 11%;
+  --radius: 12px;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'Merriweather', 'Times New Roman', serif;
+  --motion-duration: 180ms;
+  --motion-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark {
+  --background: 222 47% 7%;
+  --foreground: 210 40% 98%;
+  --panel: 222 47% 9%;
+  --panel-foreground: 210 40% 98%;
+  --muted: 223 47% 13%;
+  --muted-foreground: 215 20% 65%;
+  --border: 223 47% 16%;
+  --border-strong: 223 45% 24%;
+  --accent: 210 40% 98%;
+  --accent-foreground: 222 47% 9%;
+  --destructive: 0 62% 45%;
+  --destructive-foreground: 210 40% 98%;
+  --success: 142 65% 45%;
+  --success-foreground: 210 40% 98%;
+  --ring: 210 40% 98%;
 }
 
 @layer base {
@@ -15,28 +49,102 @@
     box-sizing: border-box;
   }
 
+  html {
+    font-family: var(--font-sans);
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    scroll-behavior: smooth;
+  }
+
   body {
     margin: 0;
-    font-family:
-      'Inter',
-      system-ui,
-      -apple-system,
-      BlinkMacSystemFont,
-      'Segoe UI',
-      sans-serif;
-    background-color: var(--background);
-    color: var(--foreground);
     min-height: 100vh;
+    font-family: var(--font-sans);
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    line-height: 1.6;
+    letter-spacing: -0.01em;
   }
 
   a {
     color: inherit;
-    text-decoration: none;
+  }
+
+  :is(
+    a,
+    button,
+    input,
+    textarea,
+    select,
+    summary,
+    [role='button'],
+    [tabindex]
+  ):focus-visible {
+    position: relative;
+    z-index: 1;
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 3px;
+    box-shadow: 0 0 0 2px hsl(var(--ring));
+    border-color: hsl(var(--ring));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
 @layer utilities {
-  .card-shell {
-    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+  .ui-text {
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    letter-spacing: -0.01em;
   }
+
+  .reading-text {
+    font-family: var(--font-serif);
+    line-height: 1.85;
+    letter-spacing: -0.02em;
+    font-size: 1.125rem;
+    max-width: 66ch;
+  }
+
+  .card-shell {
+    @apply border border-border bg-panel text-panel-foreground shadow-sm;
+    border-radius: var(--radius);
+  }
+}
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-panel: hsl(var(--panel));
+  --color-panel-foreground: hsl(var(--panel-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-border: hsl(var(--border));
+  --color-border-strong: hsl(var(--border-strong));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-danger: hsl(var(--destructive));
+  --color-danger-foreground: hsl(var(--destructive-foreground));
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-ring: hsl(var(--ring));
+  --color-surface: hsl(var(--panel));
+  --color-surface-foreground: hsl(var(--panel-foreground));
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) * 0.75);
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
 }

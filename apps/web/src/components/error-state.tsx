@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import * as React from 'react';
 
+import { Panel } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -24,25 +25,28 @@ export function ErrorState({
   ...props
 }: ErrorStateProps) {
   return (
-    <div
+    <Panel
       className={cn(
-        'mx-auto flex max-w-lg flex-col items-center gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm shadow-slate-900/5 text-center',
+        'mx-auto max-w-lg space-y-4 rounded-2xl border border-red-200 bg-white px-6 py-6 shadow-sm text-center text-slate-600',
         className,
       )}
       {...props}
     >
-      <p className="text-xs uppercase tracking-widest text-slate-400">Error</p>
-      <h3 className="text-xl font-semibold text-slate-900">{title}</h3>
-      <p className="text-sm text-slate-600">{message}</p>
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        {onRetry ? <Button onClick={onRetry}>{retryLabel}</Button> : null}
-        <Link
-          href={homeHref}
-          className="text-sm font-semibold text-primary underline-offset-2 hover:underline"
-        >
-          {homeLabel}
-        </Link>
+      <div className="space-y-2">
+        <p className="text-xs uppercase tracking-widest text-red-400">Error</p>
+        <h3 className="text-xl font-semibold text-slate-900">{title}</h3>
+        <p className="text-sm text-slate-600">{message}</p>
       </div>
-    </div>
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        {onRetry ? (
+          <Button variant="secondary" onClick={onRetry}>
+            {retryLabel}
+          </Button>
+        ) : null}
+        <Button variant="ghost" size="sm" asChild>
+          <Link href={homeHref}>{homeLabel}</Link>
+        </Button>
+      </div>
+    </Panel>
   );
 }

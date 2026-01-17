@@ -3,7 +3,9 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 
-const skeletonVariants = cva('animate-pulse rounded-md bg-slate-200/70 dark:bg-slate-800/40', {
+const skeletonVariants = cva(
+  'motion-safe:animate-pulse motion-reduce:animate-none rounded-md bg-slate-200/70 dark:bg-slate-800/40',
+  {
   variants: {
     size: {
       default: 'h-4',

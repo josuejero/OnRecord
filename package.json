@@ -20,6 +20,7 @@
     "format:check": "prettier . --check",
     "seed:users": "pnpm --filter @onrecord/web exec node scripts/seed-users.mjs",
     "policy:test": "pnpm --filter @onrecord/web exec node scripts/rls-negative-tests.mjs",
+    "test:web:a11y": "pnpm --filter @onrecord/web test:a11y",
     "test:web:e2e": "pnpm --filter @onrecord/web test:e2e",
     "ci:local": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm policy:test && pnpm test:web:e2e && pnpm e2e",
     "eval:promptfoo": "promptfoo eval --config eval/promptfooconfig.yml -o eval/results.json",

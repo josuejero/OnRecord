@@ -7,7 +7,11 @@ export function UiToaster() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const handle = window.setTimeout(() => setMounted(true), 0);
+
+    return () => {
+      window.clearTimeout(handle);
+    };
   }, []);
 
   return (
@@ -23,7 +27,8 @@ export function UiToaster() {
         richColors
         position="bottom-right"
         toastOptions={{
-          className: 'border bg-white/90 shadow-lg',
+          className:
+            'pointer-events-auto w-full max-w-sm rounded-2xl border border-slate-200 bg-white/95 px-4 py-3 text-sm text-slate-900 shadow-2xl shadow-slate-900/25 backdrop-blur motion-safe:transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none',
           duration: 4000,
         }}
       />

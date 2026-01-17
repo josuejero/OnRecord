@@ -6,7 +6,7 @@ type EmptyStateProps = React.HTMLAttributes<HTMLDivElement> & {
   icon?: React.ReactNode;
   title: React.ReactNode;
   description: React.ReactNode;
-  action?: React.ReactNode;
+  action: React.ReactNode;
 };
 
 export function EmptyState({
@@ -32,7 +32,7 @@ export function EmptyState({
       ) : null}
       <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
       <p className="mt-1 text-sm text-slate-500">{description}</p>
-      {action ? <div className="mt-4 flex justify-center">{action}</div> : null}
+      <div className="mt-4 flex justify-center">{action}</div>
     </div>
   );
 }

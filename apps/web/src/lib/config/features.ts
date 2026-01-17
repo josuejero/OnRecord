@@ -7,6 +7,7 @@ export interface FeatureFlags {
   aiRecapProvider: AiRecapProvider;
   labelerEnabled: boolean;
   evalsPageEnabled: boolean;
+  uiShellV2Enabled: boolean;
 }
 
 const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
@@ -16,6 +17,7 @@ const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
   aiRecapProvider: 'mock',
   labelerEnabled: true,
   evalsPageEnabled: true,
+  uiShellV2Enabled: false,
 };
 
 const AVAILABLE_AI_RECAP_PROVIDERS: AiRecapProvider[] = AiRecapProviderSchema.options;
@@ -81,6 +83,10 @@ export function getFeatureFlags(): FeatureFlags {
     evalsPageEnabled: parseBooleanFlag(
       process.env.NEXT_PUBLIC_EVALS_PAGE_ENABLED,
       DEFAULT_FEATURE_FLAGS.evalsPageEnabled,
+    ),
+    uiShellV2Enabled: parseBooleanFlag(
+      process.env.NEXT_PUBLIC_UI_SHELL_V2_ENABLED,
+      DEFAULT_FEATURE_FLAGS.uiShellV2Enabled,
     ),
   };
 
