@@ -8,16 +8,19 @@ const SESSION_ID = 'e2e_audio_input_demo_session';
 
 async function e2eSaveTranscript(_: FormData) {
   'use server';
+  void _;
   revalidatePath('/dev/audio-input');
 }
 
 async function e2eUploadSessionAudio(_: FormData) {
   'use server';
+  void _;
   revalidatePath('/dev/audio-input');
 }
 
 async function e2eProcessTranscript(_: FormData) {
   'use server';
+  void _;
   revalidatePath('/dev/audio-input');
 }
 

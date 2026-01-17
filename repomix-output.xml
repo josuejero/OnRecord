@@ -87,8 +87,6 @@ apps/
           debug/
             page.tsx
           dev/
-            audio-input/
-              page.tsx
             dialog/
               page.tsx
           evals/
@@ -138,6 +136,9 @@ apps/
         (public)/
           demo-room/
             page.tsx
+          dev/
+            audio-input/
+              page.tsx
           login/
             page.tsx
           recaps/
@@ -2553,6 +2554,65 @@ export default function DemoRoomPage() {
 }
 </file>
 
+<file path="apps/web/src/app/(public)/dev/audio-input/page.tsx">
+import { revalidatePath } from 'next/cache';
+import { notFound } from 'next/navigation';
+
+import AudioInput from '@/components/audio/AudioInput';
+import { Button } from '@/components/ui/button';
+
+const SESSION_ID = 'e2e_audio_input_demo_session';
+
+async function e2eSaveTranscript(_: FormData) {
+  'use server';
+  revalidatePath('/dev/audio-input');
+}
+
+async function e2eUploadSessionAudio(_: FormData) {
+  'use server';
+  revalidatePath('/dev/audio-input');
+}
+
+async function e2eProcessTranscript(_: FormData) {
+  'use server';
+  revalidatePath('/dev/audio-input');
+}
+
+export default function DevAudioInputPage() {
+  if (process.env.NODE_ENV === 'production') {
+    notFound();
+  }
+
+  return (
+    <main className="mx-auto max-w-3xl p-6 space-y-6">
+      <h1 className="text-2xl font-semibold">Audio Input Dev Harness</h1>
+
+      <AudioInput
+        sessionId={SESSION_ID}
+        revalidatePath="/dev/audio-input"
+        initialText="Factory preset transcript"
+        voiceInputEnabled
+        voiceUploadEnabled
+        saveAction={e2eSaveTranscript}
+        uploadAction={e2eUploadSessionAudio}
+      />
+
+      <form
+        action={e2eProcessTranscript}
+        className="flex items-center gap-3"
+        data-testid="process-transcript-form"
+      >
+        <input type="hidden" name="session_id" value={SESSION_ID} />
+        <input type="hidden" name="revalidate_path" value="/dev/audio-input" />
+        <Button type="submit" data-testid="process-transcript-button">
+          Process Transcript (E2E)
+        </Button>
+      </form>
+    </main>
+  );
+}
+</file>
+
 <file path="apps/web/src/app/(public)/recaps/[slug]/ExportButtonsClient.tsx">
 'use client';
 
@@ -2661,38 +2721,6 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
       <main className="flex-1">
         <div className="mx-auto w-full max-w-4xl px-4 py-10">{children}</div>
       </main>
-    </div>
-  );
-}
-</file>
-
-<file path="apps/web/src/app/(public)/page.tsx">
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-export default function HomePage() {
-  return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>OnRecord</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-slate-500">
-            Verified, person-centric press rooms with moderated question queues, on-record answers,
-            transcripts, and public recap pages.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Button asChild>
-              <Link href="/demo-room">Open Demo Room</Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href="/debug">Health / Debug</Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
@@ -7297,50 +7325,6 @@ main().catch((error) => {
 });
 </file>
 
-<file path="apps/web/src/app/(app)/dev/audio-input/page.tsx">
-import { notFound } from 'next/navigation';
-
-import { processTranscript } from '@/app/(app)/rooms/[figureSlug]/[roomSlug]/actions';
-import AudioInput from '@/components/audio/AudioInput';
-import { Button } from '@/components/ui/button';
-
-const DEV_SESSION_ID = '00000000-0000-0000-0000-000000000000';
-
-export default function DevAudioInputPage() {
-  if (process.env.NODE_ENV === 'production') {
-    notFound();
-  }
-
-  return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div className="text-sm text-slate-500">
-        This page is a dev-only fixture used for automated voice input testing.
-      </div>
-
-      <AudioInput
-        sessionId={DEV_SESSION_ID}
-        revalidatePath="/"
-        initialText="Factory preset transcript"
-        voiceInputEnabled
-        voiceUploadEnabled
-      />
-
-      <form
-        action={processTranscript}
-        className="flex items-center gap-3"
-        data-testid="process-transcript-form"
-      >
-        <input type="hidden" name="session_id" value={DEV_SESSION_ID} />
-        <input type="hidden" name="revalidate" value="/" />
-        <Button data-testid="process-transcript-button" type="submit" variant="secondary">
-          Cleanup + refresh insights
-        </Button>
-      </form>
-    </div>
-  );
-}
-</file>
-
 <file path="apps/web/src/app/(app)/insights/InsightsTableClient.tsx">
 'use client';
 
@@ -9814,291 +9798,34 @@ export default async function RecapPage({ params }: { params: Promise<{ slug: st
 }
 </file>
 
-<file path="apps/web/src/components/app-shell/nav.ts">
-import {
-  BarChart3,
-  Bug,
-  ClipboardCheck,
-  IdCard,
-  MapPin,
-  Mic2,
-  ShieldCheck,
-  Terminal,
-  UserCheck,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-
-export type Role = 'reporter' | 'moderator' | 'staff' | 'admin_service';
-export type NavGroup = 'primary' | 'secondary' | 'dev';
-
-export type AppNavItem = {
-  title: string;
-  href: string;
-  icon: LucideIcon;
-  description?: string;
-  roles?: Role[];
-  group: NavGroup;
-  devOnly?: boolean;
-};
-
-export const NAV_SECTION_ORDER: NavGroup[] = ['primary', 'secondary', 'dev'];
-
-export const NAV_SECTION_LABELS: Record<NavGroup, string> = {
-  primary: 'Primary',
-  secondary: 'Secondary',
-  dev: 'Development',
-};
-
-const NAV_ITEMS: AppNavItem[] = [
-  {
-    title: 'Rooms',
-    href: '/rooms',
-    icon: MapPin,
-    description: 'Explore support rooms and sessions.',
-    group: 'primary',
-    roles: ['reporter', 'moderator', 'staff', 'admin_service'],
-  },
-  {
-    title: 'Insights',
-    href: '/insights',
-    icon: BarChart3,
-    description: 'Session metrics and analytics.',
-    group: 'primary',
-    roles: ['moderator', 'staff', 'admin_service'],
-  },
-  {
-    title: 'Reporter dashboard',
-    href: '/reporter',
-    icon: UserCheck,
-    description: 'Reporter status and guidance.',
-    group: 'secondary',
-    roles: ['reporter'],
-  },
-  {
-    title: 'Moderator dashboard',
-    href: '/moderator',
-    icon: ShieldCheck,
-    description: 'Session controls and approvals.',
-    group: 'secondary',
-    roles: ['moderator', 'staff', 'admin_service'],
-  },
-  {
-    title: 'Who am I?',
-    href: '/whoami',
-    icon: IdCard,
-    description: 'Session context and sign-out.',
-    group: 'secondary',
-    roles: ['reporter', 'moderator', 'staff', 'admin_service'],
-  },
-  {
-    title: 'Debug',
-    href: '/debug',
-    icon: Bug,
-    description: 'Database reachability.',
-    group: 'dev',
-    roles: ['moderator', 'staff', 'admin_service'],
-    devOnly: true,
-  },
-  {
-    title: 'Evals',
-    href: '/evals',
-    icon: ClipboardCheck,
-    description: 'Latest evaluation summary.',
-    group: 'dev',
-    roles: ['staff', 'admin_service'],
-    devOnly: true,
-  },
-  {
-    title: 'Dev dialog',
-    href: '/dev/dialog',
-    icon: Terminal,
-    description: 'Focus-trap accessibility demo.',
-    group: 'dev',
-    roles: ['staff', 'admin_service'],
-    devOnly: true,
-  },
-  {
-    title: 'Dev audio input',
-    href: '/dev/audio-input',
-    icon: Mic2,
-    description: 'Voice input automation.',
-    group: 'dev',
-    roles: ['staff', 'admin_service'],
-    devOnly: true,
-  },
-];
-
-export function getNavItemsForRole(role: Role, includeDev: boolean) {
-  return NAV_ITEMS.filter((item) => {
-    if (item.devOnly && !includeDev) return false;
-    if (!item.roles?.length) return true;
-
-    return item.roles.includes(role);
-  });
-}
-</file>
-
-<file path="apps/web/src/components/app-shell/Sidebar.tsx">
-'use client';
-
+<file path="apps/web/src/app/(public)/page.tsx">
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { ChevronLeft, ChevronRight, User2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-
-import type { AppNavItem, NavGroup, Role } from './nav';
-import { NAV_SECTION_LABELS, NAV_SECTION_ORDER } from './nav';
-
-type SidebarProps = {
-  navItems: AppNavItem[];
-  collapsed: boolean;
-  onToggleCollapse: () => void;
-  user: { email: string | null; displayName?: string | null };
-  role: Role;
-  environmentLabel: string;
-};
-
-export default function Sidebar({
-  navItems,
-  collapsed,
-  onToggleCollapse,
-  user,
-  role,
-  environmentLabel,
-}: SidebarProps) {
-  const pathname = usePathname() ?? '/';
-
-  const sections: Array<{ group: NavGroup; items: AppNavItem[] }> = NAV_SECTION_ORDER.map(
-    (group) => ({
-      group,
-      items: navItems.filter((item) => item.group === group),
-    }),
-  );
-
-  const userLabel = user.displayName ?? user.email ?? 'Signed in';
-  const userInitial = userLabel.charAt(0).toUpperCase();
-
-  const linkBaseClasses =
-    'flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none';
-
+export default function HomePage() {
   return (
-    <aside
-      className={cn(
-        'flex h-full flex-col border-r border-slate-200 bg-white motion-safe:transition-all motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none',
-        collapsed ? 'w-20' : 'w-64',
-      )}
-    >
-      <div className="flex items-center justify-between border-b border-slate-100 px-3 py-3">
-        <span className={cn('text-lg font-semibold tracking-tight', collapsed && 'sr-only')}>
-          OnRecord
-        </span>
-        <button
-          type="button"
-          aria-label={collapsed ? 'Expand navigation panel' : 'Collapse navigation panel'}
-          className="rounded-md border border-slate-200 p-1 text-slate-500 transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none hover:border-slate-300 hover:text-slate-700"
-          onClick={onToggleCollapse}
-        >
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </button>
-      </div>
-
-      <nav className="flex-1 overflow-y-auto px-2 py-4" aria-label="Primary">
-        {sections.map((section) => {
-          if (!section.items.length) return null;
-          return (
-            <div key={section.group} className="mb-5">
-              <p
-                className={cn(
-                  'px-3 text-xs font-semibold uppercase tracking-wide text-slate-500',
-                  collapsed && 'sr-only',
-                )}
-              >
-                {NAV_SECTION_LABELS[section.group]}
-              </p>
-              <div className="mt-2 space-y-1">
-                {section.items.map((item) => {
-                  const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      prefetch={false}
-                      aria-current={isActive ? 'page' : undefined}
-                      aria-label={item.title}
-                      className={cn(
-                        linkBaseClasses,
-                        isActive
-                          ? 'bg-primary/10 text-primary'
-                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
-                        collapsed && 'justify-center',
-                      )}
-                    >
-                      <item.icon className="h-4 w-4 flex-none" aria-hidden="true" />
-                      <span className={cn('ml-3 truncate', collapsed && 'sr-only')}>
-                        {item.title}
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </nav>
-
-      <div className="border-t border-slate-100 px-3 py-4">
-        <div className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-sm font-semibold text-slate-700">
-            {userInitial}
-          </span>
-          <div className={cn('flex-1 truncate text-sm', collapsed && 'sr-only')}>
-            <p className="font-medium text-slate-900">{userLabel}</p>
-            <p className="text-xs text-slate-500">{role}</p>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>OnRecord</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-slate-500">
+            Verified, person-centric press rooms with moderated question queues, on-record answers,
+            transcripts, and public recap pages.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Button asChild data-testid="nav-demo-room">
+              <Link href="/demo-room">Open Demo Room</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/debug">Health / Debug</Link>
+            </Button>
           </div>
-        </div>
-        <div
-          className={cn('mt-3 flex flex-wrap items-center gap-2', collapsed && 'justify-center')}
-        >
-          <Badge variant="secondary" className="text-[10px]">
-            {role}
-          </Badge>
-          <Badge variant="outline" className="text-[10px]">
-            {environmentLabel}
-          </Badge>
-        </div>
-        <details
-          className={cn(
-            'mt-3 rounded-md border border-slate-100 bg-slate-50 p-2',
-            collapsed && 'sr-only',
-          )}
-        >
-          <summary className="flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-700">
-            <User2 className="h-4 w-4 text-slate-500" />
-            Account
-          </summary>
-          <div className="mt-2 space-y-2 text-sm">
-            <Link
-              href="/whoami"
-              prefetch={false}
-              className="block rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-            >
-              View profile
-            </Link>
-            <form action="/logout" method="post">
-              <button
-                type="submit"
-                className="w-full rounded-md bg-slate-900 px-2 py-1 text-left text-xs font-semibold uppercase tracking-wide text-white hover:bg-slate-800"
-              >
-                Sign out
-              </button>
-            </form>
-          </div>
-        </details>
-      </div>
-    </aside>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 </file>
@@ -13467,28 +13194,6 @@ packages:
   - 'e2e'
 </file>
 
-<file path="apps/web/playwright/helpers/auth.ts">
-import { expect, type Page } from '@playwright/test';
-
-export async function loginAs(page: Page, opts: { email: string; password?: string }) {
-  const password = opts.password ?? 'password123!';
-
-  await page.goto('/login');
-  await page.getByTestId('login-email').fill(opts.email);
-  await page.getByTestId('login-password').fill(password);
-  await page.getByTestId('login-submit').click();
-
-  // Stable “logged in” assertion on /login.
-  await expect(page.getByTestId('login-signed-in')).toBeVisible();
-  await expect(page.getByTestId('login-signed-in-email')).toContainText(opts.email);
-
-  // Now land on the canonical page the rest of the suite expects.
-  await page.goto('/whoami');
-  await expect(page.getByTestId('whoami-role')).toBeVisible();
-  await expect(page.getByTestId('whoami-title')).toBeVisible();
-}
-</file>
-
 <file path="apps/web/playwright/accessibility.spec.ts">
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
@@ -16489,6 +16194,323 @@ function filterLocalCommands(commands: LocalCommand[], query: string) {
 }
 </file>
 
+<file path="apps/web/src/components/app-shell/nav.ts">
+export type Role = 'reporter' | 'moderator' | 'staff' | 'admin_service';
+export type NavGroup = 'primary' | 'secondary' | 'dev';
+
+// IMPORTANT: This must stay serializable because it is passed from Server Components to Client Components.
+export type NavIcon =
+  | 'map-pin'
+  | 'bar-chart-3'
+  | 'user-check'
+  | 'shield-check'
+  | 'id-card'
+  | 'bug'
+  | 'clipboard-check'
+  | 'terminal'
+  | 'mic-2';
+
+export type AppNavItem = {
+  title: string;
+  href: string;
+  icon: NavIcon;
+  description?: string;
+  roles?: Role[];
+  group: NavGroup;
+  devOnly?: boolean;
+};
+
+export const NAV_SECTION_ORDER: NavGroup[] = ['primary', 'secondary', 'dev'];
+
+export const NAV_SECTION_LABELS: Record<NavGroup, string> = {
+  primary: 'Primary',
+  secondary: 'Secondary',
+  dev: 'Development',
+};
+
+const NAV_ITEMS: AppNavItem[] = [
+  {
+    title: 'Rooms',
+    href: '/rooms',
+    icon: 'map-pin',
+    description: 'Explore support rooms and sessions.',
+    group: 'primary',
+    roles: ['reporter', 'moderator', 'staff', 'admin_service'],
+  },
+  {
+    title: 'Insights',
+    href: '/insights',
+    icon: 'bar-chart-3',
+    description: 'Session metrics and analytics.',
+    group: 'primary',
+    roles: ['moderator', 'staff', 'admin_service'],
+  },
+  {
+    title: 'Reporter dashboard',
+    href: '/reporter',
+    icon: 'user-check',
+    description: 'Reporter status and guidance.',
+    group: 'secondary',
+    roles: ['reporter'],
+  },
+  {
+    title: 'Moderator dashboard',
+    href: '/moderator',
+    icon: 'shield-check',
+    description: 'Session controls and approvals.',
+    group: 'secondary',
+    roles: ['moderator', 'staff', 'admin_service'],
+  },
+  {
+    title: 'Who am I?',
+    href: '/whoami',
+    icon: 'id-card',
+    description: 'Session context and sign-out.',
+    group: 'secondary',
+    roles: ['reporter', 'moderator', 'staff', 'admin_service'],
+  },
+  {
+    title: 'Debug',
+    href: '/debug',
+    icon: 'bug',
+    description: 'Database reachability.',
+    group: 'dev',
+    roles: ['moderator', 'staff', 'admin_service'],
+    devOnly: true,
+  },
+  {
+    title: 'Evals',
+    href: '/evals',
+    icon: 'clipboard-check',
+    description: 'Latest evaluation summary.',
+    group: 'dev',
+    roles: ['staff', 'admin_service'],
+    devOnly: true,
+  },
+  {
+    title: 'Dev dialog',
+    href: '/dev/dialog',
+    icon: 'terminal',
+    description: 'Focus-trap accessibility demo.',
+    group: 'dev',
+    roles: ['staff', 'admin_service'],
+    devOnly: true,
+  },
+  {
+    title: 'Dev audio input',
+    href: '/dev/audio-input',
+    icon: 'mic-2',
+    description: 'Voice input automation.',
+    group: 'dev',
+    roles: ['staff', 'admin_service'],
+    devOnly: true,
+  },
+];
+
+export function getNavItemsForRole(role: Role, includeDev: boolean) {
+  return NAV_ITEMS.filter((item) => {
+    if (item.devOnly && !includeDev) return false;
+    if (!item.roles?.length) return true;
+
+    return item.roles.includes(role);
+  });
+}
+</file>
+
+<file path="apps/web/src/components/app-shell/Sidebar.tsx">
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import type { LucideIcon } from 'lucide-react';
+import {
+  BarChart3,
+  Bug,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardCheck,
+  IdCard,
+  MapPin,
+  Mic2,
+  ShieldCheck,
+  Terminal,
+  User2,
+  UserCheck,
+} from 'lucide-react';
+
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+
+import type { AppNavItem, NavGroup, NavIcon, Role } from './nav';
+import { NAV_SECTION_LABELS, NAV_SECTION_ORDER } from './nav';
+
+const NAV_ICON_MAP: Record<NavIcon, LucideIcon> = {
+  'map-pin': MapPin,
+  'bar-chart-3': BarChart3,
+  'user-check': UserCheck,
+  'shield-check': ShieldCheck,
+  'id-card': IdCard,
+  bug: Bug,
+  'clipboard-check': ClipboardCheck,
+  terminal: Terminal,
+  'mic-2': Mic2,
+};
+
+type SidebarProps = {
+  navItems: AppNavItem[];
+  collapsed: boolean;
+  onToggleCollapse: () => void;
+  user: { email: string | null; displayName?: string | null };
+  role: Role;
+  environmentLabel: string;
+};
+
+export default function Sidebar({
+  navItems,
+  collapsed,
+  onToggleCollapse,
+  user,
+  role,
+  environmentLabel,
+}: SidebarProps) {
+  const pathname = usePathname() ?? '/';
+
+  const sections: Array<{ group: NavGroup; items: AppNavItem[] }> = NAV_SECTION_ORDER.map(
+    (group) => ({
+      group,
+      items: navItems.filter((item) => item.group === group),
+    }),
+  );
+
+  const userLabel = user.displayName ?? user.email ?? 'Signed in';
+  const userInitial = userLabel.charAt(0).toUpperCase();
+
+  const linkBaseClasses =
+    'flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none';
+
+  return (
+    <aside
+      className={cn(
+        'flex h-full flex-col border-r border-slate-200 bg-white motion-safe:transition-all motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none',
+        collapsed ? 'w-20' : 'w-64',
+      )}
+    >
+      <div className="flex items-center justify-between border-b border-slate-100 px-3 py-3">
+        <span className={cn('text-lg font-semibold tracking-tight', collapsed && 'sr-only')}>
+          OnRecord
+        </span>
+        <button
+          type="button"
+          aria-label={collapsed ? 'Expand navigation panel' : 'Collapse navigation panel'}
+          className="rounded-md border border-slate-200 p-1 text-slate-500 transition motion-safe:duration-200 motion-safe:ease-out motion-reduce:transition-none hover:border-slate-300 hover:text-slate-700"
+          onClick={onToggleCollapse}
+        >
+          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+        </button>
+      </div>
+
+      <nav className="flex-1 overflow-y-auto px-2 py-4" aria-label="Primary">
+        {sections.map((section) => {
+          if (!section.items.length) return null;
+          return (
+            <div key={section.group} className="mb-5">
+              <p
+                className={cn(
+                  'px-3 text-xs font-semibold uppercase tracking-wide text-slate-500',
+                  collapsed && 'sr-only',
+                )}
+              >
+                {NAV_SECTION_LABELS[section.group]}
+              </p>
+              <div className="mt-2 space-y-1">
+                {section.items.map((item) => {
+                  const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      prefetch={false}
+                      aria-current={isActive ? 'page' : undefined}
+                      aria-label={item.title}
+                      className={cn(
+                        linkBaseClasses,
+                        isActive
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
+                        collapsed && 'justify-center',
+                      )}
+                    >
+                      {(() => {
+                        const Icon = NAV_ICON_MAP[item.icon] ?? User2;
+                        return <Icon className="h-4 w-4 shrink-0" />;
+                      })()}
+                      <span className={cn('ml-3 truncate', collapsed && 'sr-only')}>
+                        {item.title}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </nav>
+
+      <div className="border-t border-slate-100 px-3 py-4">
+        <div className="flex items-center gap-3">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-sm font-semibold text-slate-700">
+            {userInitial}
+          </span>
+          <div className={cn('flex-1 truncate text-sm', collapsed && 'sr-only')}>
+            <p className="font-medium text-slate-900">{userLabel}</p>
+            <p className="text-xs text-slate-500">{role}</p>
+          </div>
+        </div>
+        <div
+          className={cn('mt-3 flex flex-wrap items-center gap-2', collapsed && 'justify-center')}
+        >
+          <Badge variant="secondary" className="text-[10px]">
+            {role}
+          </Badge>
+          <Badge variant="outline" className="text-[10px]">
+            {environmentLabel}
+          </Badge>
+        </div>
+        <details
+          className={cn(
+            'mt-3 rounded-md border border-slate-100 bg-slate-50 p-2',
+            collapsed && 'sr-only',
+          )}
+        >
+          <summary className="flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-700">
+            <User2 className="h-4 w-4 text-slate-500" />
+            Account
+          </summary>
+          <div className="mt-2 space-y-2 text-sm">
+            <Link
+              href="/whoami"
+              prefetch={false}
+              className="block rounded-md px-2 py-1 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+            >
+              View profile
+            </Link>
+            <form action="/logout" method="post">
+              <button
+                type="submit"
+                className="w-full rounded-md bg-slate-900 px-2 py-1 text-left text-xs font-semibold uppercase tracking-wide text-white hover:bg-slate-800"
+              >
+                Sign out
+              </button>
+            </form>
+          </div>
+        </details>
+      </div>
+    </aside>
+  );
+}
+</file>
+
 <file path="apps/web/src/components/ui/badge.tsx">
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
@@ -17160,6 +17182,28 @@ If you believe you have found a security vulnerability:
 - RLS is enabled on all tables.
 - Privileged actions are gated by roles.
 - Public recap pages only render published content.
+</file>
+
+<file path="apps/web/playwright/helpers/auth.ts">
+import { expect, type Page } from '@playwright/test';
+
+export async function loginAs(page: Page, opts: { email: string; password?: string }) {
+  const password = opts.password ?? 'password123!';
+
+  await page.goto('/login');
+  await page.getByTestId('login-email').fill(opts.email);
+  await page.getByTestId('login-password').fill(password);
+  await page.getByTestId('login-submit').click();
+
+  // Stable “logged in” assertion on /login.
+  await expect(page.getByTestId('login-signed-in')).toBeVisible();
+  await expect(page.getByTestId('login-signed-in-email')).toContainText(opts.email);
+
+  // Now land on the canonical page the rest of the suite expects.
+  await page.goto('/whoami');
+  await expect(page.getByTestId('whoami-role')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByTestId('whoami-title')).toBeVisible({ timeout: 15000 });
+}
 </file>
 
 <file path="apps/web/playwright/a11y.spec.ts">
@@ -17911,55 +17955,6 @@ const Skeleton = React.forwardRef<HTMLSpanElement, SkeletonProps>(function Skele
 export { Skeleton, skeletonVariants };
 </file>
 
-<file path="e2e/tests/home.spec.ts">
-import { test, expect, type TestInfo } from '@playwright/test';
-
-test('home to demo room renders', async ({ page }, testInfo) => {
-  console.info(`[e2e] Starting ${testInfo.title}`);
-  await page.goto('/');
-
-  await expect(page.getByTestId('nav-demo-room')).toBeVisible();
-  await page.getByTestId('nav-demo-room').click();
-
-  await expect(page.getByTestId('demo-room-title')).toHaveText('Press Room: Demo');
-  await expect(page.getByTestId('room-header-actions')).toBeVisible();
-  await expect(page.getByTestId('queue-count-pending')).toBeVisible();
-  console.info(`[e2e] Completed ${testInfo.title}`);
-});
-
-test('room header actions support keyboard navigation', async ({ page }, testInfo) => {
-  console.info(`[e2e] Starting ${testInfo.title}`);
-  await page.goto('/');
-  await page.getByTestId('nav-demo-room').click();
-
-  const searchTrigger = page.locator('[data-testid="room-search-trigger"]');
-  await expect(searchTrigger).toBeVisible();
-
-  const focusSearchTrigger = async () => {
-    for (let i = 0; i < 30; i += 1) {
-      const activeId = await page.evaluate(() =>
-        document.activeElement?.getAttribute('data-testid'),
-      );
-      if (activeId === 'room-search-trigger') {
-        return;
-      }
-      await page.keyboard.press('Tab');
-    }
-    throw new Error('room-search-trigger was not reachable via keyboard navigation');
-  };
-
-  await focusSearchTrigger();
-  await page.keyboard.press('Enter');
-
-  const searchDialog = page.locator('[data-testid="room-search-dialog"]');
-  await expect(searchDialog).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(searchDialog).toBeHidden();
-
-  console.info(`[e2e] Completed ${testInfo.title}`);
-});
-</file>
-
 <file path="e2e/playwright.config.ts">
 import { defineConfig } from '@playwright/test';
 
@@ -18595,6 +18590,36 @@ export default defineConfig({
 });
 </file>
 
+<file path="e2e/tests/home.spec.ts">
+import { test, expect, type TestInfo } from '@playwright/test';
+
+test('home to demo room renders', async ({ page }) => {
+  await page.goto('/');
+
+  await expect(page.getByTestId('nav-demo-room')).toBeVisible();
+  await page.getByTestId('nav-demo-room').click();
+
+  await expect(page.getByTestId('demo-room-title')).toHaveText('Press Room: Demo');
+  await expect(page.getByTestId('question-q_001')).toBeVisible();
+});
+
+test('home demo room link supports keyboard navigation', async ({ page }, testInfo: TestInfo) => {
+  console.info(`[e2e] Starting ${testInfo.title}`);
+  await page.goto('/');
+
+  for (let i = 0; i < 12; i += 1) {
+    const focused = await page.evaluate(() => document.activeElement?.getAttribute('data-testid'));
+    if (focused === 'nav-demo-room') break;
+    await page.keyboard.press('Tab');
+  }
+
+  await expect(page.getByTestId('nav-demo-room')).toBeFocused();
+  await page.keyboard.press('Enter');
+
+  await expect(page.getByTestId('demo-room-title')).toHaveText('Press Room: Demo');
+});
+</file>
+
 <file path="apps/web/src/app/layout.tsx">
 import './globals.css';
 import type { Metadata } from 'next';
@@ -18742,148 +18767,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 </file>
 
-<file path=".github/workflows/ci.yml">
-name: ci
-
-on:
-  pull_request:
-  push:
-    branches: [master, main]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.26.2
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-
-      - name: Install
-        run: pnpm install --frozen-lockfile
-
-      - name: Install Playwright browsers (e2e)
-        run: pnpm --filter @onrecord/e2e exec playwright install --with-deps
-
-      - name: Format check
-        run: pnpm format:check
-
-      - name: Lint
-        run: pnpm lint
-
-      - name: Typecheck
-        run: pnpm typecheck
-
-      - name: Unit tests
-        run: pnpm test
-
-      - name: Rebuild better-sqlite3
-        run: pnpm rebuild better-sqlite3 -- --build-from-source
-
-      - name: Run promptfoo eval
-        run: pnpm eval
-
-      - name: Upload promptfoo eval results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: promptfoo-eval
-          path: eval/results.json
-
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v1
-        with:
-          version: latest
-
-      - name: Start Supabase
-        run: pnpm exec supabase start
-
-      - name: Export Supabase keys (map to SUPABASE_*)
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          # Supabase CLI exports API_URL / ANON_KEY / SERVICE_ROLE_KEY by default
-          # (and requires the local stack to be started).
-          # Retry briefly in case status isn't populated immediately.
-          for i in {1..30}; do
-            OUT="$(pnpm exec supabase status -o env 2>/dev/null || true)"
-            echo "$OUT" | grep -q "SERVICE_ROLE_KEY" && break
-            sleep 2
-          done
-
-          # Add the CLI vars to the job env (strip optional `export ` prefix if present)
-          echo "$OUT" | sed 's/^export //' >> "$GITHUB_ENV"
-
-          # Map to the names your app/seed expects
-          echo "$OUT" | sed 's/^export //' > /tmp/supabase.env
-          set -a
-          . /tmp/supabase.env
-          set +a
-
-          echo "SUPABASE_URL=$API_URL" >> "$GITHUB_ENV"
-          echo "SUPABASE_ANON_KEY=$ANON_KEY" >> "$GITHUB_ENV"
-          echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY" >> "$GITHUB_ENV"
-
-      - name: Create web env
-        run: |
-          cat > apps/web/.env.local <<EOF
-          SUPABASE_URL=$SUPABASE_URL
-          SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY
-          NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_URL
-          NEXT_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
-          EOF
-
-      - name: Reset DB
-        run: pnpm supabase:reset
-
-      - name: Seed demo users
-        run: pnpm seed:users
-        env:
-          SUPABASE_URL: ${{ env.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ env.SUPABASE_SERVICE_ROLE_KEY }}
-
-      - name: Policy negative tests
-        run: pnpm policy:test
-        env:
-          SUPABASE_URL: ${{ env.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ env.SUPABASE_SERVICE_ROLE_KEY }}
-
-      - name: Install Playwright browsers (web)
-        run: pnpm --filter @onrecord/web exec playwright install --with-deps
-
-      - name: Cross-browser smoke Playwright
-        run: pnpm --filter @onrecord/web test:e2e:smoke
-
-      - name: Web Playwright suite (Chromium)
-        run: pnpm test:web:e2e -- --project=chromium
-
-      - name: Repo smoke e2e
-        run: pnpm e2e
-
-      - name: Lighthouse CI budgets
-        run: pnpm lhci
-
-      - name: Upload Playwright report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: |
-            apps/web/playwright-report
-            apps/web/test-results
-            e2e/playwright-report
-            e2e/test-results
-</file>
-
 <file path="apps/web/scripts/seed-users.mjs">
 import fs from 'node:fs';
 import path from 'node:path';
@@ -19011,6 +18894,142 @@ main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
+</file>
+
+<file path=".github/workflows/ci.yml">
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [master, main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers (e2e)
+        run: pnpm --filter @onrecord/e2e exec playwright install --with-deps
+
+      - name: Format check
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Rebuild better-sqlite3
+        run: pnpm rebuild better-sqlite3 -- --build-from-source
+
+      - name: Run promptfoo eval
+        run: pnpm eval
+
+      - name: Upload promptfoo eval results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: promptfoo-eval
+          path: eval/results.json
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start Supabase
+        run: pnpm exec supabase start
+
+      - name: Export Supabase keys (map to SUPABASE_*)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Supabase CLI exports API_URL / ANON_KEY / SERVICE_ROLE_KEY by default
+          # (and requires the local stack to be started).
+          # Retry briefly in case status isn't populated immediately.
+          for i in {1..30}; do
+            OUT="$(pnpm exec supabase status -o env 2>/dev/null || true)"
+            echo "$OUT" | grep -q "SERVICE_ROLE_KEY" && break
+            sleep 2
+          done
+
+          # Add the CLI vars to the job env (strip optional `export ` prefix if present)
+          echo "$OUT" | sed 's/^export //' >> "$GITHUB_ENV"
+
+          # Map to the names your app/seed expects
+          echo "$OUT" | sed 's/^export //' > /tmp/supabase.env
+          set -a
+          . /tmp/supabase.env
+          set +a
+
+          echo "SUPABASE_URL=$API_URL" >> "$GITHUB_ENV"
+          echo "SUPABASE_ANON_KEY=$ANON_KEY" >> "$GITHUB_ENV"
+          echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY" >> "$GITHUB_ENV"
+
+      - name: Create web env
+        run: |
+          cat > apps/web/.env.local <<EOF
+          SUPABASE_URL=$SUPABASE_URL
+          SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY
+          NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_URL
+          NEXT_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
+          EOF
+
+      - name: Reset DB
+        run: pnpm supabase:reset
+
+      - name: Seed demo users
+        run: pnpm seed:users
+        env:
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ env.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Policy negative tests
+        run: pnpm policy:test
+        env:
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ env.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Install Playwright browsers (web)
+        run: pnpm --filter @onrecord/web exec playwright install --with-deps
+
+      - name: Repo smoke e2e
+        run: pnpm e2e
+
+      - name: Lighthouse CI budgets
+        run: pnpm lhci
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+            e2e/playwright-report
+            e2e/test-results
 </file>
 
 </files>
