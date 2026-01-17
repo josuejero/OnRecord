@@ -15,9 +15,7 @@ test('home demo room link supports keyboard navigation', async ({ page }, testIn
   await page.goto('/');
 
   for (let i = 0; i < 12; i += 1) {
-    const focused = await page.evaluate(() =>
-      document.activeElement?.getAttribute('data-testid'),
-    );
+    const focused = await page.evaluate(() => document.activeElement?.getAttribute('data-testid'));
     if (focused === 'nav-demo-room') break;
     await page.keyboard.press('Tab');
   }
