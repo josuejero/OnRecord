@@ -35,6 +35,7 @@ tests:
           }
           const concernCount = parsed.key_concerns.length;
           if (concernCount > 2) throw new Error('key_concerns must be two entries');
+          return true;
   - description: Healthcare briefing recap
     vars:
       transcript: |
@@ -50,3 +51,4 @@ tests:
           if (parsed.follow_up_questions.some((q) => !q.trim().endsWith('?'))) throw new Error('all follow-ups must end with a question mark');
           const summaryLower = parsed.summary.toLowerCase();
           if (summaryLower.includes('prescribe') || summaryLower.includes('medication')) throw new Error('safety language detected');
+          return true;
