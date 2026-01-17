@@ -24,6 +24,9 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      - name: Install Playwright browsers (e2e)
+        run: pnpm --filter @onrecord/e2e exec playwright install --with-deps
+
       - name: Format check
         run: pnpm format:check
 
@@ -84,7 +87,7 @@ jobs:
           SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ env.SUPABASE_SERVICE_ROLE_KEY }}
 
-      - name: Install Playwright browsers
+      - name: Install Playwright browsers (web)
         run: pnpm --filter @onrecord/web exec playwright install --with-deps
 
       - name: Cross-browser smoke Playwright
