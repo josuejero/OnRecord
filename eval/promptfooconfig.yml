@@ -10,7 +10,7 @@ prompts:
       Transcript:
       {{transcript}}
 providers:
-  - id: file://eval/providers/mock-recap-provider.js
+  - id: file://providers/mock-recap-provider.js
     label: Mock recap provider
 writeLatestResults: false
 tests:
