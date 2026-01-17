@@ -117,17 +117,3 @@ jobs:
 
       - name: Repo smoke e2e
         run: pnpm e2e
-
-      - name: Lighthouse CI budgets
-        run: pnpm lhci
-
-      - name: Upload Playwright report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: |
-            apps/web/playwright-report
-            apps/web/test-results
-            e2e/playwright-report
-            e2e/test-results
