@@ -1,14 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { createClient } from '@supabase/supabase-js';
 
-const repoRoot = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  '..',
-  '..',
-  '..',
-);
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 
 function parseEnvLine(rawLine) {
   const line = rawLine.trim();
@@ -30,13 +26,28 @@ function parseEnvLine(rawLine) {
   return { key, value };
 }
 
-function loadEnvFile(filePath) {
-  if (!fs.existsSync(filePath)) return;
-  const contents = fs.readFileSync(filePath, 'utf8');
+function loadEnvFromString(contents) {
   for (const rawLine of contents.split(/\r?\n/)) {
     const parsed = parseEnvLine(rawLine);
     if (!parsed || process.env[parsed.key] !== undefined) continue;
     process.env[parsed.key] = parsed.value;
+  }
+}
+
+function loadEnvFile(filePath) {
+  if (!fs.existsSync(filePath)) return;
+  loadEnvFromString(fs.readFileSync(filePath, 'utf8'));
+}
+
+function tryLoadSupabaseCliEnv() {
+  try {
+    const output = execFileSync('pnpm', ['exec', 'supabase', 'status', '-o', 'env'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    loadEnvFromString(output);
+  } catch {
+    // ignore; we only use CLI output when available
   }
 }
 
@@ -47,8 +58,14 @@ function loadEnvFile(filePath) {
   path.join(repoRoot, '.env'),
 ].forEach(loadEnvFile);
 
-const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+let supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+let serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !serviceKey) {
+  tryLoadSupabaseCliEnv();
+  supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+}
 
 if (!supabaseUrl || !serviceKey) {
   throw new Error(
