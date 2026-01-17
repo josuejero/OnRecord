@@ -33,10 +33,7 @@ export default function AppShell({
   const [collapsed, setCollapsed] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
 
-  const navItems = useMemo(
-    () => getNavItemsForRole(role, includeDev ?? false),
-    [includeDev, role],
-  );
+  const navItems = useMemo(() => getNavItemsForRole(role, includeDev ?? false), [includeDev, role]);
 
   const quickActions = useMemo(
     () => navItems.filter((item) => item.group === 'primary').slice(0, 2),
