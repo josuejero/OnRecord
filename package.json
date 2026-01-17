@@ -41,7 +41,8 @@
       "sharp": "0.34.5"
     },
     "onlyBuiltDependencies": [
-      "supabase"
+      "supabase",
+      "better-sqlite3"
     ]
   }
 }
