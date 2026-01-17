@@ -34,7 +34,7 @@
     "prettier": "^3.0.0",
     "promptfoo": "0.120.11",
     "supabase": "2.72.7",
-    "zod": "^3.25.76"
+    "zod": "^4.3.5"
   },
   "pnpm": {
     "overrides": {
