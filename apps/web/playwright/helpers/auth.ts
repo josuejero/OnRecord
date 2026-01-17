@@ -14,6 +14,6 @@ export async function loginAs(page: Page, opts: { email: string; password?: stri
 
   // Now land on the canonical page the rest of the suite expects.
   await page.goto('/whoami');
-  await expect(page.getByTestId('whoami-role')).toBeVisible();
-  await expect(page.getByTestId('whoami-title')).toBeVisible();
+  await expect(page.getByTestId('whoami-role')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByTestId('whoami-title')).toBeVisible({ timeout: 15000 });
 }

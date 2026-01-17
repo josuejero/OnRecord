@@ -2,13 +2,39 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronLeft, ChevronRight, User2 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import {
+  BarChart3,
+  Bug,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardCheck,
+  IdCard,
+  MapPin,
+  Mic2,
+  ShieldCheck,
+  Terminal,
+  User2,
+  UserCheck,
+} from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
-import type { AppNavItem, NavGroup, Role } from './nav';
+import type { AppNavItem, NavGroup, NavIcon, Role } from './nav';
 import { NAV_SECTION_LABELS, NAV_SECTION_ORDER } from './nav';
+
+const NAV_ICON_MAP: Record<NavIcon, LucideIcon> = {
+  'map-pin': MapPin,
+  'bar-chart-3': BarChart3,
+  'user-check': UserCheck,
+  'shield-check': ShieldCheck,
+  'id-card': IdCard,
+  bug: Bug,
+  'clipboard-check': ClipboardCheck,
+  terminal: Terminal,
+  'mic-2': Mic2,
+};
 
 type SidebarProps = {
   navItems: AppNavItem[];
@@ -95,7 +121,10 @@ export default function Sidebar({
                         collapsed && 'justify-center',
                       )}
                     >
-                      <item.icon className="h-4 w-4 flex-none" aria-hidden="true" />
+                      {(() => {
+                        const Icon = NAV_ICON_MAP[item.icon] ?? User2;
+                        return <Icon className="h-4 w-4 shrink-0" />;
+                      })()}
                       <span className={cn('ml-3 truncate', collapsed && 'sr-only')}>
                         {item.title}
                       </span>

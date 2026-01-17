@@ -18805,8 +18805,32 @@ jobs:
       - name: Start Supabase
         run: pnpm exec supabase start
 
-      - name: Export Supabase keys
-        run: pnpm exec supabase status -o env >> $GITHUB_ENV
+      - name: Export Supabase keys (map to SUPABASE_*)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Supabase CLI exports API_URL / ANON_KEY / SERVICE_ROLE_KEY by default
+          # (and requires the local stack to be started).
+          # Retry briefly in case status isn't populated immediately.
+          for i in {1..30}; do
+            OUT="$(pnpm exec supabase status -o env 2>/dev/null || true)"
+            echo "$OUT" | grep -q "SERVICE_ROLE_KEY" && break
+            sleep 2
+          done
+
+          # Add the CLI vars to the job env (strip optional `export ` prefix if present)
+          echo "$OUT" | sed 's/^export //' >> "$GITHUB_ENV"
+
+          # Map to the names your app/seed expects
+          echo "$OUT" | sed 's/^export //' > /tmp/supabase.env
+          set -a
+          . /tmp/supabase.env
+          set +a
+
+          echo "SUPABASE_URL=$API_URL" >> "$GITHUB_ENV"
+          echo "SUPABASE_ANON_KEY=$ANON_KEY" >> "$GITHUB_ENV"
+          echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY" >> "$GITHUB_ENV"
 
       - name: Create web env
         run: |
@@ -18921,13 +18945,15 @@ function tryLoadSupabaseCliEnv() {
   path.join(repoRoot, '.env'),
 ].forEach(loadEnvFile);
 
-let supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-let serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+let supabaseUrl =
+  process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.API_URL;
+let serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !serviceKey) {
   tryLoadSupabaseCliEnv();
-  supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  supabaseUrl =
+    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.API_URL;
+  serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SERVICE_ROLE_KEY;
 }
 
 if (!supabaseUrl || !serviceKey) {
