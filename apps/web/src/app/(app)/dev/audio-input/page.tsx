@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 
-import { processTranscript } from '@/app/rooms/[figureSlug]/[roomSlug]/actions';
+import { processTranscript } from '@/app/(app)/rooms/[figureSlug]/[roomSlug]/actions';
 import AudioInput from '@/components/audio/AudioInput';
 import { Button } from '@/components/ui/button';
 
