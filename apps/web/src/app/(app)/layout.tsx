@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 import AppShell from '@/components/app-shell/AppShell';
-import { getNavItemsForRole, type Role } from '@/components/app-shell/nav';
+import type { Role } from '@/components/app-shell/nav';
 import { requireUser } from '@/lib/auth/require';
 import { supabaseServer } from '@/lib/supabase/server';
 
@@ -20,7 +20,7 @@ export default async function AppLayout({ children }: AppLayoutProps) {
     .maybeSingle();
 
   const resolvedRole = (profile?.role ?? 'reporter') as Role;
-  const navItems = getNavItemsForRole(resolvedRole, process.env.NODE_ENV !== 'production');
+  const includeDev = process.env.NODE_ENV !== 'production';
 
   const { data: rooms } = await supabase
     .from('rooms')
@@ -49,7 +49,7 @@ export default async function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <AppShell
-      navItems={navItems}
+      includeDev={includeDev}
       user={{
         email: user.email ?? null,
         displayName: profile?.display_name ?? null,
