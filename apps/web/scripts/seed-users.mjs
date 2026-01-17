@@ -15,7 +15,10 @@ function parseEnvLine(rawLine) {
   let value = line.slice(separatorIndex + 1).trim();
 
   if (!key) return null;
-  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+  if (
+    (value.startsWith('"') && value.endsWith('"')) ||
+    (value.startsWith("'") && value.endsWith("'"))
+  ) {
     value = value.slice(1, -1);
   }
 
