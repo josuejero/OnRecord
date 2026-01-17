@@ -58,13 +58,15 @@ function tryLoadSupabaseCliEnv() {
   path.join(repoRoot, '.env'),
 ].forEach(loadEnvFile);
 
-let supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-let serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+let supabaseUrl =
+  process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.API_URL;
+let serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !serviceKey) {
   tryLoadSupabaseCliEnv();
-  supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  supabaseUrl =
+    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.API_URL;
+  serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SERVICE_ROLE_KEY;
 }
 
 if (!supabaseUrl || !serviceKey) {
