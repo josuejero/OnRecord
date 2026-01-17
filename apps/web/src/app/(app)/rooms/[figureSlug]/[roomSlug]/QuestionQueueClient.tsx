@@ -300,6 +300,11 @@ export function QuestionQueueClient({
     [orderedQuestions],
   );
 
+  const answeredQueue = useMemo(
+    () => orderedQuestions.filter((q) => q.status === 'answered'),
+    [orderedQuestions],
+  );
+
   const activeQuestion = useMemo(
     () =>
       activeQuestionId ? (orderedQuestions.find((q) => q.id === activeQuestionId) ?? null) : null,

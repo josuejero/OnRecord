@@ -78,11 +78,11 @@ export default async function RoomsPage() {
     const currentTime = new Date(
       session.updated_at ?? session.ends_at ?? session.starts_at ?? 0,
     ).getTime();
-    const previousTime =
-      previous &&
-      new Date(
-        previous.updated_at ?? previous.ends_at ?? previous.starts_at ?? 0,
-      ).getTime();
+    const previousTime = previous
+      ? new Date(
+          previous.updated_at ?? previous.ends_at ?? previous.starts_at ?? 0,
+        ).getTime()
+      : 0;
     if (!previous || currentTime >= previousTime) {
       activityByRoom.set(session.room_id, session);
     }

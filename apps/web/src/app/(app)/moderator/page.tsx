@@ -30,11 +30,14 @@ type RecentSession = {
   id: string;
   status: string;
   starts_at: string | null;
-  room?: {
-    title: string;
-    slug: string;
-    public_figures?: { name: string; slug: string }[] | null;
-  } | null;
+  room?: (
+    | {
+        title: string;
+        slug: string;
+        public_figures?: { name: string; slug: string }[] | null;
+      }
+    | null
+  )[] | null;
 };
 
 type DocLink = {
@@ -204,11 +207,12 @@ export default async function ModeratorDashboard() {
               <p className="text-sm text-slate-500">No sessions yet.</p>
             ) : (
               sessionList.map((session) => {
-                const room = session.room;
+                const room = session.room?.[0] ?? null;
                 const figure = room?.public_figures?.[0];
                 const figureName = figure?.name ?? 'Figure';
                 const roomTitle = room?.title ?? 'Room';
-                const roomUrl = figure?.slug && room?.slug ? `/rooms/${figure.slug}/${room.slug}` : '/rooms';
+                const roomUrl =
+                  figure?.slug && room?.slug ? `/rooms/${figure.slug}/${room.slug}` : '/rooms';
                 return (
                   <article
                     key={session.id}

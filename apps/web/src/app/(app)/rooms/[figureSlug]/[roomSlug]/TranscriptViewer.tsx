@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
+import type { JSX } from 'react';
 import { ArrowDown, Clock, Tag } from 'lucide-react';
 
 import { cn } from '@/lib/utils';

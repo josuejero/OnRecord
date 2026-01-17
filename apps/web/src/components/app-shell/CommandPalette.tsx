@@ -197,7 +197,7 @@ export default function CommandPalette({
     },
   ].filter((group) => group.localItems.length > 0 || group.remoteItems.length > 0);
 
-  const handleSelect = (href?: string) => {
+  const handleSelect = (href?: string | null) => {
     if (!href) return;
     onOpenChange(false);
     router.push(href);

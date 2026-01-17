@@ -84,26 +84,26 @@ async function searchRooms(
     }[],
   ).slice(0, ROOM_LIMIT);
 
-  return merged
-    .map((room) => {
-      const figure = room.public_figures;
-      const href = buildRoomHref(figure?.slug, room.slug);
-      if (!href) return null;
+  const results: CommandPaletteSearchResult[] = [];
+  for (const room of merged) {
+    const figure = room.public_figures;
+    const href = buildRoomHref(figure?.slug, room.slug);
+    if (!href) continue;
 
-      return {
-        id: `room:${room.id}`,
-        type: 'room' as const,
-        group: 'Rooms' as CommandPaletteGroup,
-        label: room.title,
-        description: figure?.name ? `Figure: ${figure.name}` : 'Open room',
-        href,
-        metadata: {
-          figureName: figure?.name,
-          roomTitle: room.title,
-        },
-      };
-    })
-    .filter((entry): entry is CommandPaletteSearchResult => Boolean(entry));
+    results.push({
+      id: `room:${room.id}`,
+      type: 'room' as const,
+      group: 'Rooms' as CommandPaletteGroup,
+      label: room.title,
+      description: figure?.name ? `Figure: ${figure.name}` : 'Open room',
+      href,
+      metadata: {
+        figureName: figure?.name,
+        roomTitle: room.title,
+      },
+    });
+  }
+  return results;
 }
 
 async function searchSessions(
@@ -149,32 +149,32 @@ async function searchSessions(
     }>,
   ).slice(0, SESSION_LIMIT);
 
-  return merged
-    .map((session) => {
-      const room = session.rooms;
-      const figure = room?.public_figures;
-      const href = buildRoomHref(figure?.slug, room?.slug);
-      if (!href) return null;
+  const results: CommandPaletteSearchResult[] = [];
+  for (const session of merged) {
+    const room = session.rooms;
+    const figure = room?.public_figures;
+    const href = buildRoomHref(figure?.slug, room?.slug);
+    if (!href) continue;
 
-      const status = session.status ?? 'session';
-      const label = `${room?.title ?? 'Room'} · ${status}`;
-      return {
-        id: `session:${session.id}`,
-        type: 'session' as const,
-        group: 'Sessions' as CommandPaletteGroup,
-        label,
-        description: figure?.name
-          ? `${figure.name} · ${capitalize(status)}`
-          : `Session · ${capitalize(status)}`,
-        href,
-        metadata: {
-          figureName: figure?.name,
-          roomTitle: room?.title,
-          sessionStatus: session.status,
-        },
-      };
-    })
-    .filter((entry): entry is CommandPaletteSearchResult => Boolean(entry));
+    const status = session.status ?? 'session';
+    const label = `${room?.title ?? 'Room'} · ${status}`;
+    results.push({
+      id: `session:${session.id}`,
+      type: 'session' as const,
+      group: 'Sessions' as CommandPaletteGroup,
+      label,
+      description: figure?.name
+        ? `${figure.name} · ${capitalize(status)}`
+        : `Session · ${capitalize(status)}`,
+      href,
+      metadata: {
+        figureName: figure?.name,
+        roomTitle: room?.title,
+        sessionStatus: session.status,
+      },
+    });
+  }
+  return results;
 }
 
 async function searchRecaps(
@@ -225,28 +225,28 @@ async function searchRecaps(
     }>,
   ).slice(0, RECAP_LIMIT);
 
-  return merged
-    .map((recap) => {
-      if (!recap.slug) return null;
+  const results: CommandPaletteSearchResult[] = [];
+  for (const recap of merged) {
+    if (!recap.slug) continue;
 
-      const room = recap.sessions?.rooms;
-      const figureName = room?.public_figures?.name;
-      return {
-        id: `recap:${recap.id}`,
-        type: 'recap' as const,
-        group: 'Actions' as CommandPaletteGroup,
-        label: recap.title,
-        description: figureName
-          ? `${figureName} · ${room?.title ?? 'Room'}`
-          : 'Public recap',
-        href: `/recaps/${recap.slug}`,
-        metadata: {
-          figureName,
-          roomTitle: room?.title,
-        },
-      };
-    })
-    .filter((entry): entry is CommandPaletteSearchResult => Boolean(entry));
+    const room = recap.sessions?.rooms;
+    const figureName = room?.public_figures?.name;
+    results.push({
+      id: `recap:${recap.id}`,
+      type: 'recap' as const,
+      group: 'Actions' as CommandPaletteGroup,
+      label: recap.title,
+      description: figureName
+        ? `${figureName} · ${room?.title ?? 'Room'}`
+        : 'Public recap',
+      href: `/recaps/${recap.slug}`,
+      metadata: {
+        figureName,
+        roomTitle: room?.title,
+      },
+    });
+  }
+  return results;
 }
 
 async function searchAssets(
@@ -270,7 +270,8 @@ async function searchAssets(
 
   if (error || !data) return [];
 
-  return (data as Array<{
+  const results: CommandPaletteSearchResult[] = [];
+  for (const asset of data as Array<{
     id: string;
     original_filename?: string | null;
     visibility?: string | null;
@@ -282,33 +283,32 @@ async function searchAssets(
         public_figures?: { slug?: string; name?: string } | null;
       } | null;
     } | null;
-  }>)
-    .map((asset) => {
-      const room = asset.sessions?.rooms;
-      const figure = room?.public_figures;
-      const roomHref = buildRoomHref(figure?.slug, room?.slug);
-      const isPublic = asset.visibility === 'public' && asset.public_url;
-      const label = asset.original_filename ?? 'Asset file';
-      const descriptionParts = [];
-      if (figure?.name) descriptionParts.push(figure.name);
-      if (room?.title) descriptionParts.push(room.title);
-      descriptionParts.push(asset.visibility === 'public' ? 'Public asset' : 'Private asset');
+  }>) {
+    const room = asset.sessions?.rooms;
+    const figure = room?.public_figures;
+    const roomHref = buildRoomHref(figure?.slug, room?.slug);
+    const isPublic = asset.visibility === 'public' && asset.public_url;
+    const label = asset.original_filename ?? 'Asset file';
+    const descriptionParts = [];
+    if (figure?.name) descriptionParts.push(figure.name);
+    if (room?.title) descriptionParts.push(room.title);
+    descriptionParts.push(asset.visibility === 'public' ? 'Public asset' : 'Private asset');
 
-      return {
-        id: `asset:${asset.id}`,
-        type: 'asset' as const,
-        group: 'Actions' as CommandPaletteGroup,
-        label,
-        description: descriptionParts.filter(Boolean).join(' · '),
-        href: isPublic ? asset.public_url : roomHref ?? null,
-        metadata: {
-          figureName: figure?.name,
-          roomTitle: room?.title,
-        },
-      };
-    })
-    .filter((entry): entry is CommandPaletteSearchResult => Boolean(entry))
-    .slice(0, ASSET_LIMIT);
+    results.push({
+      id: `asset:${asset.id}`,
+      type: 'asset' as const,
+      group: 'Actions' as CommandPaletteGroup,
+      label,
+      description: descriptionParts.filter(Boolean).join(' · '),
+      href: isPublic ? asset.public_url : roomHref ?? null,
+      metadata: {
+        figureName: figure?.name,
+        roomTitle: room?.title,
+      },
+    });
+  }
+
+  return results.slice(0, ASSET_LIMIT);
 }
 
 async function searchTerms(

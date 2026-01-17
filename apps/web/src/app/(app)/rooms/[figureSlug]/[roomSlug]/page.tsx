@@ -44,6 +44,24 @@ type PageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
+type CachedFigure = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
+type CachedRoomRow = {
+  id: string;
+  slug: string;
+  title: string;
+  public_figures?: { slug?: string; name?: string }[] | null;
+};
+
+type CachedRoom = {
+  figure: CachedFigure;
+  room: CachedRoomRow;
+};
+
 const DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium',
   timeStyle: 'short',
@@ -74,7 +92,7 @@ export default async function RoomPage({ params, searchParams }: PageProps) {
   const supabase = supabaseServer();
 
   const getCachedRoom = unstable_cache(
-    async () => {
+    async (): Promise<CachedRoom | null> => {
       const { data: figure } = await supabase
         .from('public_figures')
         .select('*')
@@ -372,9 +390,7 @@ function StickySessionHeader({
   session: RoomSession;
   queueCounts: QueueCounts;
   isLive: boolean;
-  room: (typeof getCachedRoom) extends (...args: unknown[]) => infer R
-    ? NonNullable<Awaited<R>>['room']
-    : never;
+  room: CachedRoom['room'];
 }) {
   const pendingTotal = queueCounts.pending + queueCounts.needsEdit;
   const stateLabel = session.status === 'live' ? 'Live' : session.status === 'scheduled' ? 'Scheduled' : 'Ended';
@@ -443,12 +459,8 @@ function SessionControlSection({
   sessionToControl: RoomSession | null;
   live: RoomSession | null;
   canControlSession: boolean;
-  room: (typeof getCachedRoom) extends (...args: unknown[]) => infer R
-    ? NonNullable<Awaited<R>>['room']
-    : never;
-  figure: (typeof getCachedRoom) extends (...args: unknown[]) => infer R
-    ? NonNullable<Awaited<R>>['figure']
-    : never;
+  room: CachedRoom['room'];
+  figure: CachedRoom['figure'];
   revalidatePath: string;
   className?: string;
 }) {
