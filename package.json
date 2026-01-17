@@ -9,7 +9,7 @@
     "dev": "pnpm --filter @onrecord/web dev",
     "lint": "pnpm -r --if-present lint",
     "typecheck": "pnpm -r --if-present typecheck",
-    "test": "pnpm -r --if-present test",
+    "test": "pnpm -r --filter '!@onrecord/e2e' --if-present test",
     "e2e": "pnpm --filter @onrecord/e2e test",
     "supabase:init": "pnpm exec supabase init",
     "supabase:start": "pnpm exec supabase start",
