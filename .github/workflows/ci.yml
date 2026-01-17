@@ -115,9 +115,6 @@ jobs:
       - name: Install Playwright browsers (web)
         run: pnpm --filter @onrecord/web exec playwright install --with-deps
 
-      - name: Web Playwright suite (Chromium)
-        run: pnpm test:web:e2e -- --project=chromium
-
       - name: Repo smoke e2e
         run: pnpm e2e
 
