@@ -15,7 +15,7 @@ export default function HomePage() {
             transcripts, and public recap pages.
           </p>
           <div className="flex flex-wrap gap-3">
-            <Button asChild>
+            <Button asChild data-testid="nav-demo-room">
               <Link href="/demo-room">Open Demo Room</Link>
             </Button>
             <Button variant="outline" asChild>
