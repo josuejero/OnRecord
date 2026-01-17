@@ -1,6 +1,6 @@
 # OnRecord
 
-[![CI](https://github.com/josuejero/OnRecord/actions/workflows/ci.yml/badge.svg)](https://github.com/josuejero/OnRecord/actions/workflows/ci.yml) [![Lighthouse](https://img.shields.io/badge/Lighthouse-passing-brightgreen)](https://web.dev/measure) [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![CI](https://github.com/josuejero/OnRecord/actions/workflows/ci.yml/badge.svg)](https://github.com/josuejero/OnRecord/actions/workflows/ci.yml) [![Lighthouse](https://img.shields.io/badge/Lighthouse-passing-brightgreen)](https://web.dev/measure) [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)[![Live App](https://img.shields.io/badge/app-live-brightgreen.svg)](https://on-record-web.vercel.app )
 
 OnRecord is the recruiter-ready press conference interface: live room control, question queues, and recap assets all share a single responsive canvas so demos, remote interviews, or async reviews load like production — even when data is slow or missing.
 
